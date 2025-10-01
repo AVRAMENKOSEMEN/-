@@ -1,45 +1,46 @@
-const CACHE_NAME = "btgps-cache-v1";
+const CACHE_NAME = "btgps-cache-v2";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
+  "./map.html",
+  "./offline.html",
   "./style.css",
   "./script.js",
+  "./history-manager.js",
+  "./settings.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
 ];
 
-// Установка service worker и кэширование файлов
+// Установка
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Активация и очистка старого кэша
+// Активация
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keyList) =>
+      Promise.all(keyList.map((key) => key !== CACHE_NAME ? caches.delete(key) : null))
+    )
   );
   self.clients.claim();
 });
 
-// Перехват сетевых запросов
+// Fetch с offline fallback
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then((response) => {
+        if (response) return response;
+        if (event.request.mode === "navigate") {
+          return caches.match("./offline.html");
+        }
+      });
     })
   );
 });
