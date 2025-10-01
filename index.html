@@ -14,39 +14,33 @@
   <h1>📡 Bluetooth GPS App</h1>
   <button id="settingsBtn" class="settingsBtn" aria-label="Настройки">⚙️</button>
 </header>
-
 <main>
   <div class="controls">
     <button id="connectBtn" aria-pressed="false">🔗 Подключиться к BLE</button>
     <button id="disconnectBtn" style="display:none">⛔ Отключиться</button>
     <button id="testBtn">🛰 Тестовые координаты</button>
   </div>
-
   <div class="controls">
     <button id="ledOnBtn" disabled>💡 Включить светодиод</button>
     <button id="ledOffBtn" disabled>💡 Выключить светодиод</button>
   </div>
-
   <div class="controls">
     <button id="historyBtn">🗂 История координат</button>
   </div>
-
   <div class="data">
     <div class="data-box" id="coords">Координаты маяка: <span id="coordsVal">N/A</span></div>
     <div class="data-box" id="speed">Скорость маяка: <span id="speedVal">N/A</span></div>
     <div class="data-box" id="distance">Расстояние: <span id="distanceVal">N/A</span></div>
     <div class="data-box" id="deviceStatus">Устройство: <span id="deviceName">Не подключено</span></div>
   </div>
-
   <div id="map" class="map-container" tabindex="0" role="application" aria-label="Карта"></div>
-
   <div class="controls">
     <button id="copyBtn">📋 Копировать</button>
     <button id="moreBtn">🌍 Открыть в приложении</button>
   </div>
 </main>
 
-<!-- Модалка открыть в приложении -->
+<!-- Модалки -->
 <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-content" role="document">
     <button id="closeModal" class="close" aria-label="Закрыть">&times;</button>
@@ -57,8 +51,6 @@
     <button class="extBtn" id="openOSM">OpenStreetMap</button>
   </div>
 </div>
-
-<!-- Модалка настроек -->
 <div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-content">
     <button id="closeSettings" class="close">&times;</button>
