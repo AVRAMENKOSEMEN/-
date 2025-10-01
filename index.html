@@ -1,88 +1,64 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bluetooth GPS App</title>
-<link rel="manifest" href="manifest.json" />
-<link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPS Finder</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-<header>
-  <h1>📡 Bluetooth GPS App</h1>
-  <button id="settingsBtn" class="settingsBtn" aria-label="Настройки">⚙️</button>
-</header>
-<main>
-  <div class="controls">
-    <button id="connectBtn" aria-pressed="false">🔗 Подключиться к BLE</button>
-    <button id="disconnectBtn" style="display:none">⛔ Отключиться</button>
-    <button id="testBtn">🛰 Тестовые координаты</button>
-  </div>
-  <div class="controls">
-    <button id="ledOnBtn" disabled>💡 Включить светодиод</button>
-    <button id="ledOffBtn" disabled>💡 Выключить светодиод</button>
-  </div>
-  <div class="controls">
-    <button id="historyBtn">🗂 История координат</button>
-  </div>
-  <div class="data">
-    <div class="data-box" id="coords">Координаты маяка: <span id="coordsVal">N/A</span></div>
-    <div class="data-box" id="speed">Скорость маяка: <span id="speedVal">N/A</span></div>
-    <div class="data-box" id="distance">Расстояние: <span id="distanceVal">N/A</span></div>
-    <div class="data-box" id="deviceStatus">Устройство: <span id="deviceName">Не подключено</span></div>
-  </div>
-  <div id="map" class="map-container" tabindex="0" role="application" aria-label="Карта"></div>
-  <div class="controls">
-    <button id="copyBtn">📋 Копировать</button>
-    <button id="moreBtn">🌍 Открыть в приложении</button>
-  </div>
-</main>
+  <header>
+    <h1>GPS Finder</h1>
+    <button id="settingsBtn">⚙</button>
+  </header>
 
-<!-- Модалки -->
-<div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="modal-content" role="document">
-    <button id="closeModal" class="close" aria-label="Закрыть">&times;</button>
-    <h3>Открыть координаты в:</h3>
-    <button class="extBtn" id="openGoogle">Google Maps</button>
-    <button class="extBtn" id="openYandex">Яндекс.Карты</button>
-    <button class="extBtn" id="openDgis">2ГИС</button>
-    <button class="extBtn" id="openOSM">OpenStreetMap</button>
-  </div>
-</div>
-<div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="modal-content">
-    <button id="closeSettings" class="close">&times;</button>
-    <h3>Настройки</h3>
-    <fieldset>
-      <legend>Внешний вид</legend>
-      <label><input type="radio" name="theme" value="auto" checked> Авто</label>
-      <label><input type="radio" name="theme" value="light"> Светлая</label>
-      <label><input type="radio" name="theme" value="dark"> Тёмная</label>
-    </fieldset>
-    <fieldset>
-      <legend>Система единиц</legend>
-      <label><input type="radio" name="units" value="kmh" checked> км/ч</label>
-      <label><input type="radio" name="units" value="ms"> м/с</label>
-    </fieldset>
-    <label><input type="checkbox" id="showMyLocation" checked> Показывать моё местоположение</label><br>
-    <label><input type="checkbox" id="autoTracking" checked> Автоматическое отслеживание</label><br><br>
-    <button id="saveSettings">Сохранить</button>
-    <button id="resetSettings">Сбросить</button>
-    <button id="cancelSettings">Отмена</button>
-  </div>
-</div>
+  <main>
+    <div id="map"></div>
 
-<script src="script.js" defer></script>
- <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js")
-      .then(() => console.log("Service Worker зарегистрирован"))
-      .catch((err) => console.log("Ошибка SW:", err));
-  });
-}
-</script> 
+    <div class="info-box">
+      <p id="status">Статус: Отключено</p>
+      <p id="coords">Координаты: N/A</p>
+      <p id="distance">Расстояние: N/A</p>
+      <p id="speed">Скорость: N/A</p>
+    </div>
+
+    <div class="controls">
+      <button id="connectBtn">Подключить BLE</button>
+      <button id="ledOnBtn">LED ВКЛ</button>
+      <button id="ledOffBtn">LED ВЫКЛ</button>
+      <button id="testCoordsBtn">Тестовые координаты</button>
+      <button id="historyBtn">История координат</button>
+    </div>
+  </main>
+
+  <div id="settingsPanel" class="hidden">
+    <h2>⚙ Настройки</h2>
+    <label><input type="checkbox" id="darkTheme"> Тёмная тема</label><br>
+    <label><input type="checkbox" id="showMyLocation"> Показывать моё местоположение</label><br>
+    <label><input type="checkbox" id="autoFollow"> Автоматическое отслеживание</label><br>
+    <label>Скорость: 
+      <select id="speedUnit">
+        <option value="kmh">км/ч</option>
+        <option value="ms">м/с</option>
+      </select>
+    </label>
+    <div class="settings-buttons">
+      <button id="saveSettings">Сохранить</button>
+      <button id="resetSettings">Сбросить</button>
+      <button id="closeSettings">Отмена</button>
+    </div>
+  </div>
+
+  <div id="historyPanel" class="hidden">
+    <h2>📜 История координат</h2>
+    <ul id="historyList"></ul>
+    <button id="exportHistory">Экспортировать</button>
+    <button id="closeHistory">Закрыть</button>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="settings.js"></script>
+  <script src="history-manager.js"></script>
 </body>
 </html>
