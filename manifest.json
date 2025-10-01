@@ -1,9 +1,9 @@
 {
-  "name": "Bluetooth GPS App",
-  "short_name": "BTGPS",
+  "name": "GPS Finder",
+  "short_name": "GPSFinder",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1976d2",
+  "background_color": "#121212",
   "theme_color": "#1976d2",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
