@@ -16,7 +16,7 @@ header {
 }
 
 #map {
-  height: 60vh; /* Карта занимает ~60% экрана */
+  height: 60vh;
   width: 100%;
 }
 
