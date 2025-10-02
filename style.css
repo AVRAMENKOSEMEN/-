@@ -1,0 +1,181 @@
+/* style.css */
+:root {
+  --primary-color: #1976d2;
+  --primary-dark: #145a9e;
+  --background: #ffffff;
+  --text-color: #333333;
+  --border-color: #dddddd;
+}
+
+.dark {
+  --background: #1e1e1e;
+  --text-color: #ffffff;
+  --border-color: #444444;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: var(--background);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary-color);
+  color: white;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#map {
+  height: 60vh;
+  width: 100%;
+}
+
+#dataPanel {
+  padding: 15px;
+  background: var(--background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+#dataPanel p {
+  margin: 5px 0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  background: var(--background);
+}
+
+button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+button:hover {
+  background: var(--primary-dark);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--background);
+  padding: 24px;
+  border-radius: 12px;
+  z-index: 1001;
+  width: 85%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border: 1px solid var(--border-color);
+}
+
+.hidden {
+  display: none;
+}
+
+#modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+.modal label {
+  display: block;
+  margin: 12px 0;
+  color: var(--text-color);
+}
+
+.modal select, .modal input[type="checkbox"] {
+  margin-left: 8px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modalActions button {
+  min-width: 80px;
+}
+
+#historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#historyList li {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+#historyList li:last-child {
+  border-bottom: none;
+}
+
+.beacon-marker, .my-marker {
+  font-size: 20px;
+  text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  button {
+    min-width: auto;
+  }
+  
+  .modal {
+    width: 90%;
+    margin: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.2em;
+  }
+  
+  #map {
+    height: 50vh;
+  }
+}
