@@ -70,8 +70,7 @@ body, html {
   padding: 15px;
   border-radius: 8px;
   z-index: 3001;
-  min-width: 200px;
+  min-width: 220px;
 }
 .modal-panel h2 { margin-top: 0; }
-
 .history-row { padding: 6px 0; border-bottom: 1px solid #ccc; }
