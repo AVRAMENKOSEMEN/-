@@ -1,64 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPS Finder</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Mayak Finder PWA</title>
+
+  <!-- Leaflet styles -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>GPS Finder</h1>
-    <button id="settingsBtn">⚙</button>
+  <header class="topbar">
+    <div class="left">
+      <button id="menuBtn" class="icon" aria-label="Меню">☰</button>
+      <span class="title">Mayak Finder</span>
+    </div>
+    <div class="right">
+      <button id="settingsBtn" class="icon" aria-label="Настройки">⚙️</button>
+    </div>
   </header>
 
-  <main>
-    <div id="map"></div>
+  <main class="container">
+    <section id="map" class="map" role="application" aria-label="Карта"></section>
 
-    <div class="info-box">
-      <p id="status">Статус: Отключено</p>
-      <p id="coords">Координаты: N/A</p>
-      <p id="distance">Расстояние: N/A</p>
-      <p id="speed">Скорость: N/A</p>
-    </div>
+    <nav class="controls" role="navigation" aria-label="Основные действия">
+      <button id="connectBtn" class="btn">🔗 Подключить</button>
+      <button id="ledOnBtn" class="btn small" disabled>💡 ON</button>
+      <button id="ledOffBtn" class="btn small" disabled>💡 OFF</button>
+      <button id="testBtn" class="btn">🛰 Тест</button>
+      <button id="historyBtn" class="btn">🗂 История</button>
+      <button id="openBtn" class="btn">🌍 Открыть</button>
+    </nav>
 
-    <div class="controls">
-      <button id="connectBtn">Подключить BLE</button>
-      <button id="ledOnBtn">LED ВКЛ</button>
-      <button id="ledOffBtn">LED ВЫКЛ</button>
-      <button id="testCoordsBtn">Тестовые координаты</button>
-      <button id="historyBtn">История координат</button>
-    </div>
+    <section class="status">
+      <div>Устройство: <span id="deviceName">—</span></div>
+      <div>Маяк: <span id="coordsVal">N/A</span></div>
+      <div>Скорость: <span id="speedVal">N/A</span></div>
+      <div>Расстояние: <span id="distanceVal">N/A</span></div>
+    </section>
   </main>
 
-  <div id="settingsPanel" class="hidden">
-    <h2>⚙ Настройки</h2>
-    <label><input type="checkbox" id="darkTheme"> Тёмная тема</label><br>
-    <label><input type="checkbox" id="showMyLocation"> Показывать моё местоположение</label><br>
-    <label><input type="checkbox" id="autoFollow"> Автоматическое отслеживание</label><br>
-    <label>Скорость: 
-      <select id="speedUnit">
-        <option value="kmh">км/ч</option>
-        <option value="ms">м/с</option>
-      </select>
-    </label>
-    <div class="settings-buttons">
-      <button id="saveSettings">Сохранить</button>
-      <button id="resetSettings">Сбросить</button>
-      <button id="closeSettings">Отмена</button>
+  <!-- Side menu -->
+  <aside id="sideMenu" class="sidemenu" aria-hidden="true">
+    <button id="closeMenu" class="close" aria-label="Закрыть меню">✕</button>
+    <div class="menu-section">
+      <button id="copyBtn" class="menu-btn">📋 Копировать координаты</button>
+      <button id="exportBtn" class="menu-btn">⬇️ Экспорт трека</button>
+      <button id="clearHistoryBtn" class="menu-btn">🗑 Очистить историю</button>
+    </div>
+  </aside>
+
+  <!-- Open-in modal -->
+  <div id="modalOpen" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="close" id="closeOpen" aria-label="Закрыть">✕</button>
+      <h3>Открыть в</h3>
+      <button class="ext" id="openGoogle">Google Maps</button>
+      <button class="ext" id="openYandex">Яндекс.Карты</button>
+      <button class="ext" id="openDgis">2ГИС</button>
+      <button class="ext" id="openOSM">OpenStreetMap</button>
     </div>
   </div>
 
-  <div id="historyPanel" class="hidden">
-    <h2>📜 История координат</h2>
-    <ul id="historyList"></ul>
-    <button id="exportHistory">Экспортировать</button>
-    <button id="closeHistory">Закрыть</button>
+  <!-- History modal -->
+  <div id="modalHistory" class="modal" aria-hidden="true">
+    <div class="modal-panel large">
+      <button class="close" id="closeHistory" aria-label="Закрыть">✕</button>
+      <h3>История координат</h3>
+      <div id="historyList" class="history-list"></div>
+      <div class="modal-actions">
+        <button id="exportCsv">Экспорт CSV</button>
+      </div>
+    </div>
   </div>
 
-  <script src="script.js"></script>
-  <script src="settings.js"></script>
-  <script src="history-manager.js"></script>
+  <!-- Settings modal -->
+  <div id="settingsModal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="close" id="closeSettings" aria-label="Закрыть">✕</button>
+      <h3>Настройки</h3>
+      <label>Тема:
+        <select id="themeSelect">
+          <option value="auto">Авто</option>
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+      </label>
+      <label>Единицы:
+        <select id="unitsSelect">
+          <option value="kmh">км/ч</option>
+          <option value="ms">м/с</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="showMyLocation"> Показывать моё местоположение</label>
+      <label><input type="checkbox" id="autoFollow"> Автоцентрирование</label>
+      <div class="modal-actions">
+        <button id="saveSettings">Сохранить</button>
+        <button id="resetSettings">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- offline fallback for no-JS -->
+  <noscript><div class="noscript">Включите JavaScript</div></noscript>
+
+  <!-- JS libs and app scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="settings.js" defer></script>
+  <script src="history-manager.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
