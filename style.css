@@ -1,53 +1,77 @@
-:root{
-  --bg:#f6f8fb;
-  --primary:#1976d2;
-  --accent:#28a745;
-  --panel:#ffffff;
-  --text:#111;
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: sans-serif;
 }
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-.topbar{height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;position:sticky;top:0;z-index:40}
-.title{font-weight:600}
-.icon{background:none;border:0;color:inherit;font-size:20px;padding:6px;cursor:pointer}
-.container{display:flex;flex-direction:column;height:calc(100dvh - 56px);gap:8px;padding:8px}
-.map{flex:1;border-radius:10px;overflow:hidden;min-height:260px;background:#eaeaea}
-.controls{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.btn{flex:1 1 140px;padding:10px;border-radius:10px;border:0;background:var(--primary);color:#fff;font-size:15px;cursor:pointer}
-.btn.small{flex:0 0 84px;padding:8px}
-.status{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:6px;font-size:13px}
-.sidemenu{position:fixed;right:0;top:56px;width:72%;max-width:320px;height:calc(100dvh - 56px);background:var(--panel);box-shadow:-6px 0 18px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .22s ease;z-index:50;padding:12px}
-.sidemenu.open{transform:translateX(0)}
-.menu-section{display:flex;flex-direction:column;gap:8px}
-.menu-btn{padding:10px;border-radius:8px;border:0;background:#eee;cursor:pointer}
-.modal{display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:60}
-.modal[open]{display:flex}
-.modal-panel{background:var(--panel);padding:12px;border-radius:12px;max-width:92%;width:360px;box-shadow:0 8px 28px rgba(0,0,0,0.12);position:relative}
-.modal-panel.large{width:92%;max-height:70vh;overflow:auto}
-.close{background:none;border:0;font-size:18px;position:absolute;right:12px;top:8px;cursor:pointer}
-.history-list{font-size:13px;max-height:48vh;overflow:auto}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-.noscript{padding:12px;background:#fee;border-radius:8px;margin:8px}
-.hidden{display:none}
-.dark{--bg:#0d1117;--panel:#0f1720;--primary:#1e88e5;--text:#e6eef8}
-@media(min-width:720px){.btn{flex:0 0 160px}.container{padding:12px}}
-/* добавь эти строки в конец style.css */
 
-.modal-panel {
-  z-index: 1001;              /* убеждаемся, что панель поверх оверлея */
-  position: relative;
-  display: block;
+.topbar {
+  display: flex;
+  align-items: center;
+  background: #2196f3;
+  color: white;
+  padding: 8px;
+}
+.topbar h1 { flex: 1; font-size: 18px; margin: 0; }
+.icon-btn { font-size: 20px; margin-right: 8px; }
+
+#map { height: calc(100% - 140px); }
+
+.databar {
+  background: #eee;
+  padding: 6px;
+  font-size: 14px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+  background: #ddd;
+}
+.actions button { flex: 1; min-width: 30%; padding: 8px; }
+
+.sidemenu {
+  position: fixed;
+  top: 0; left: -240px;
+  width: 220px;
+  height: 100%;
+  background: #333; color: white;
+  transition: left 0.3s;
+  z-index: 2000;
+  padding: 20px 10px;
+}
+.sidemenu.open { left: 0; }
+.sidemenu ul { list-style: none; padding: 0; }
+.sidemenu li { margin: 10px 0; }
+.sidemenu button { width: 100%; }
+
+.close-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
 }
 
 .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
   align-items: center;
   justify-content: center;
+  z-index: 3000;
 }
-
-/* если у вас были display:none/inline проблемы, эти строки убедятся, что modal[open] видна */
-.modal[open] {
-  display: flex !important;
+.modal[open] { display: flex !important; }
+.modal-panel {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  z-index: 3001;
+  min-width: 200px;
 }
+.modal-panel h2 { margin-top: 0; }
 
-/* небольшая стилизация для истории */
-.history-row { padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; }
+.history-row { padding: 6px 0; border-bottom: 1px solid #ccc; }
