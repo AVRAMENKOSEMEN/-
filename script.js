@@ -163,8 +163,8 @@ function updateMyLocation(position) {
 }
 
 function addTestBeacon() {
-  const lat = 55.751 + (Math.random() - 0.5) * 0.02;
-  const lon = 37.617 + (Math.random() - 0.5) * 0.02;
+  const lat = 54.977449 + (Math.random() - 0.5) * 0.02;
+  const lon = 73.470961 + (Math.random() - 0.5) * 0.02;
   updateBeacon(lat, lon);
 }
 
