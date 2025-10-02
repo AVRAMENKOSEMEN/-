@@ -1,29 +1,36 @@
-const CACHE_NAME = "mayak-cache-v10";
-const FILES = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./script.js",
-  "./settings.js",
-  "./history-manager.js",
-  "./manifest.json",
-  "./offline.html",
-  "./icon-192.png",
-  "./icon-512.png"
+const CACHE_NAME = "mayak-finder-cache-v1";
+const urlsToCache = [
+  "/",
+  "/index.html",
+  "/style.css",
+  "/script.js",
+  "/manifest.json",
+  "/offline.html"
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(FILES)));
-  self.skipWaiting();
+// установка service worker
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
+  );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))));
-  self.clients.claim();
+// активация и очистка старых кешей
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      );
+    })
+  );
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    fetch(e.request).catch(()=> caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('./offline.html') : undefined)))
+// перехват запросов
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request).then(resp => resp || caches.match("/offline.html")))
   );
 });
