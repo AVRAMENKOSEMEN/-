@@ -2,91 +2,71 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Маяк Finder v11</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Маяк Finder</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <link rel="manifest" href="manifest.json">
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 </head>
 <body>
-  <header class="topbar">
-    <button id="menuBtn" class="icon-btn">☰</button>
-    <h1>Маяк Finder</h1>
+  <header>
+    <h1>🔎 Маяк Finder</h1>
+    <button id="settingsBtn">⚙️</button>
   </header>
 
-  <nav id="sideMenu" class="sidemenu" aria-hidden="true">
-    <button id="closeMenu" class="close-btn">×</button>
-    <ul>
-      <li><button id="openBtn">📍 Открыть в…</button></li>
-      <li><button id="historyBtn">🗂 История</button></li>
-      <li><button id="settingsBtn">⚙️ Настройки</button></li>
-    </ul>
-  </nav>
+  <main>
+    <div id="map"></div>
 
-  <div id="map"></div>
+    <div id="dataPanel">
+      <p><strong>Координаты маяка:</strong> <span id="beaconCoords">N/A</span></p>
+      <p><strong>Моё местоположение:</strong> <span id="myCoords">N/A</span></p>
+      <p><strong>Расстояние:</strong> <span id="distance">N/A</span></p>
+    </div>
 
-  <div class="databar">
-    <div>Координаты: <span id="coordsVal">N/A</span></div>
-    <div>Скорость: <span id="speedVal">N/A</span></div>
-    <div>Расстояние: <span id="distanceVal">N/A</span></div>
-  </div>
+    <div class="controls">
+      <button id="connectBtn">🔗 Подключить BLE</button>
+      <button id="ledOnBtn">💡 LED Вкл</button>
+      <button id="ledOffBtn">💤 LED Выкл</button>
+      <button id="testBtn">🧪 Тест координаты</button>
+      <button id="historyBtn">📜 История</button>
+      <button id="openBtn">🌍 Открыть</button>
+    </div>
+  </main>
 
-  <div class="actions">
-    <button id="connectBtn">🔗 Подключиться</button>
-    <button id="ledOnBtn">💡 Вкл LED</button>
-    <button id="ledOffBtn">💡 Выкл LED</button>
-    <button id="testBtn">🛰 Тест</button>
-    <button id="copyBtn">📋 Копировать</button>
-  </div>
+  <!-- Модальные окна -->
+  <div id="modalOverlay" class="hidden"></div>
 
-  <!-- Модалка Открыть в -->
-  <div id="modalOpen" class="modal" aria-hidden="true">
-    <div class="modal-panel" tabindex="-1">
-      <h2>Открыть в…</h2>
-      <button id="openGoogle">Google Maps</button>
-      <button id="openYandex">Яндекс.Карты</button>
-      <button id="openDgis">2ГИС</button>
-      <button id="openOSM">OpenStreetMap</button>
-      <button id="closeOpen">Закрыть</button>
+  <div id="settingsModal" class="modal hidden">
+    <h2>⚙️ Настройки</h2>
+    <label><input type="checkbox" id="darkMode"> Тёмная тема</label><br>
+    <label><input type="checkbox" id="showMyPos"> Показывать моё местоположение</label><br>
+    <label><input type="checkbox" id="autoFollow"> Автоматическое отслеживание</label><br>
+    <label>Скорость в:
+      <select id="units">
+        <option value="kmh">км/ч</option>
+        <option value="ms">м/с</option>
+      </select>
+    </label>
+    <div class="modalActions">
+      <button id="saveSettings">Сохранить</button>
+      <button id="closeSettings">Отмена</button>
     </div>
   </div>
 
-  <!-- Модалка История -->
-  <div id="modalHistory" class="modal" aria-hidden="true">
-    <div class="modal-panel" tabindex="-1">
-      <h2>История координат</h2>
-      <div id="historyList"></div>
-      <button id="exportCsv">Экспорт CSV</button>
-      <button id="clearHistory">Очистить</button>
-      <button id="closeHistory">Закрыть</button>
-    </div>
+  <div id="historyModal" class="modal hidden">
+    <h2>📜 История координат</h2>
+    <ul id="historyList"></ul>
+    <button id="exportHistory">⬇️ Экспорт</button>
+    <button id="closeHistory">Закрыть</button>
   </div>
 
-  <!-- Модалка Настройки -->
-  <div id="settingsModal" class="modal" aria-hidden="true">
-    <div class="modal-panel" tabindex="-1">
-      <h2>Настройки</h2>
-      <label>Тема:
-        <select id="themeSelect">
-          <option value="auto">Авто</option>
-          <option value="light">Светлая</option>
-          <option value="dark">Тёмная</option>
-        </select>
-      </label>
-      <label>Единицы:
-        <select id="unitsSelect">
-          <option value="kmh">км/ч</option>
-          <option value="ms">м/с</option>
-        </select>
-      </label>
-      <label><input type="checkbox" id="showMyLocation" checked> Показывать моё местоположение</label>
-      <label><input type="checkbox" id="autoFollow" checked> Автоследование</label>
-      <div class="modal-actions">
-        <button id="saveSettings">Сохранить</button>
-        <button id="resetSettings">Сброс</button>
-        <button id="closeSettings">Закрыть</button>
-      </div>
-    </div>
+  <div id="openModal" class="modal hidden">
+    <h2>🌍 Открыть в приложении</h2>
+    <button id="openGoogle">Google Maps</button>
+    <button id="openYandex">Яндекс Карты</button>
+    <button id="open2gis">2ГИС</button>
+    <button id="closeOpen">Закрыть</button>
   </div>
 
   <script src="script.js"></script>
