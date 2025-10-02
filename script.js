@@ -1,98 +1,85 @@
-(function(){
-  'use strict';
+let map;
+let beaconMarker;
+let myMarker;
+let history = [];
 
-  function $id(id){ return document.getElementById(id); }
-  function safeAdd(id, ev, fn){ const el=$id(id); if(el) el.addEventListener(ev,fn); }
-  function openModal(id){ const m=$id(id); if(m){ m.setAttribute('open',''); m.style.display='flex'; } }
-  function closeModal(id){ const m=$id(id); if(m){ m.removeAttribute('open'); m.style.display='none'; } }
+// инициализация карты
+document.addEventListener("DOMContentLoaded", () => {
+  map = L.map("map").setView([55.75, 37.61], 13);
 
-  let map, marker, myMarker;
-  let history = JSON.parse(localStorage.getItem("gpsHistory") || "[]");
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
 
-  document.addEventListener('DOMContentLoaded', ()=>{
-    // меню
-    safeAdd('menuBtn','click',()=>{ $id('sideMenu').classList.add('open'); });
-    safeAdd('closeMenu','click',()=>{ $id('sideMenu').classList.remove('open'); });
+  beaconMarker = L.marker([55.75, 37.61]).addTo(map)
+    .bindPopup("Маяк");
 
-    // модалки
-    safeAdd('openBtn','click',()=>openModal('modalOpen'));
-    safeAdd('closeOpen','click',()=>closeModal('modalOpen'));
-    safeAdd('historyBtn','click',()=>{ renderHistory(); openModal('modalHistory'); });
-    safeAdd('closeHistory','click',()=>closeModal('modalHistory'));
-    safeAdd('settingsBtn','click',()=>openModal('settingsModal'));
-    safeAdd('closeSettings','click',()=>closeModal('settingsModal'));
-
-    // карта
-    initMap();
-
-    // кнопки
-    safeAdd('testBtn','click', addTestCoords);
-    safeAdd('copyBtn','click', copyCoords);
-    safeAdd('exportCsv','click', exportHistory);
-    safeAdd('clearHistory','click',()=>{ history=[]; saveHistory(); renderHistory(); });
-
-    // "открыть в"
-    safeAdd('openGoogle','click',()=>openInMaps("google"));
-    safeAdd('openYandex','click',()=>openInMaps("yandex"));
-    safeAdd('openDgis','click',()=>openInMaps("2gis"));
-    safeAdd('openOSM','click',()=>openInMaps("osm"));
+  // кнопки
+  document.getElementById("testBtn").addEventListener("click", () => {
+    let lat = 55.751 + Math.random() * 0.01;
+    let lon = 37.617 + Math.random() * 0.01;
+    updateBeacon(lat, lon);
   });
 
-  function initMap(){
-    map=L.map('map').setView([55.75,37.61],12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-  }
+  document.getElementById("openBtn").addEventListener("click", () => showModal("openModal"));
+  document.getElementById("historyBtn").addEventListener("click", () => showModal("historyModal"));
+  document.getElementById("settingsBtn").addEventListener("click", () => showModal("settingsModal"));
 
-  function addTestCoords(){
-    let lat=55.75+(Math.random()-0.5)*0.1;
-    let lon=37.61+(Math.random()-0.5)*0.1;
-    if(marker) map.removeLayer(marker);
-    marker=L.marker([lat,lon]).addTo(map);
-    map.setView([lat,lon],14);
-    $id('coordsVal').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    history.push({lat,lon,ts:Date.now()});
-    saveHistory();
-  }
+  document.getElementById("closeOpen").addEventListener("click", () => hideModal("openModal"));
+  document.getElementById("closeHistory").addEventListener("click", () => hideModal("historyModal"));
+  document.getElementById("closeSettings").addEventListener("click", () => hideModal("settingsModal"));
 
-  function copyCoords(){
-    navigator.clipboard.writeText($id('coordsVal').textContent);
-    alert("Координаты скопированы!");
-  }
+  document.getElementById("exportHistory").addEventListener("click", exportHistory);
 
-  function saveHistory(){ localStorage.setItem("gpsHistory", JSON.stringify(history)); }
+  document.getElementById("openGoogle").addEventListener("click", () => openMap("google"));
+  document.getElementById("openYandex").addEventListener("click", () => openMap("yandex"));
+  document.getElementById("open2gis").addEventListener("click", () => openMap("2gis"));
+});
 
-  function renderHistory(){
-    const list=$id('historyList');
-    list.innerHTML="";
-    history.forEach(h=>{
-      let row=document.createElement("div");
-      row.className="history-row";
-      row.textContent=`${h.lat.toFixed(5)}, ${h.lon.toFixed(5)} (${new Date(h.ts).toLocaleTimeString()})`;
-      list.appendChild(row);
-    });
-  }
+function updateBeacon(lat, lon) {
+  beaconMarker.setLatLng([lat, lon]).bindPopup(`Маяк: ${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+  document.getElementById("beaconCoords").innerText = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  history.push({lat, lon, time: new Date().toLocaleTimeString()});
+  updateHistoryList();
+}
 
-  function exportHistory(){
-    let csv="lat,lon,time\n";
-    history.forEach(h=>{
-      csv+=`${h.lat},${h.lon},${new Date(h.ts).toISOString()}\n`;
-    });
-    const blob=new Blob([csv],{type:"text/csv"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url; a.download="history.csv"; a.click();
-    URL.revokeObjectURL(url);
-  }
+function updateHistoryList() {
+  let list = document.getElementById("historyList");
+  list.innerHTML = "";
+  history.forEach(h => {
+    let li = document.createElement("li");
+    li.textContent = `${h.time}: ${h.lat.toFixed(5)}, ${h.lon.toFixed(5)}`;
+    list.appendChild(li);
+  });
+}
 
-  function openInMaps(type){
-    if(!marker){ alert("Нет координат!"); return; }
-    const lat=marker.getLatLng().lat, lon=marker.getLatLng().lng;
-    let url="";
-    if(type==="google") url=`https://maps.google.com/?q=${lat},${lon}`;
-    if(type==="yandex") url=`https://yandex.ru/maps/?pt=${lon},${lat}&z=15&l=map`;
-    if(type==="2gis") url=`https://2gis.ru/?query=${lat},${lon}`;
-    if(type==="osm") url=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`;
-    window.open(url,"_blank");
-  }
+function exportHistory() {
+  let content = history.map(h => `${h.time},${h.lat},${h.lon}`).join("\n");
+  let blob = new Blob([content], {type: "text/plain"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "history.txt";
+  a.click();
+}
 
-})();
+function showModal(id) {
+  document.getElementById("modalOverlay").classList.remove("hidden");
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function hideModal(id) {
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.getElementById(id).classList.add("hidden");
+}
+
+function openMap(service) {
+  let coords = document.getElementById("beaconCoords").innerText;
+  if(coords === "N/A") return;
+  let [lat, lon] = coords.split(",").map(x => x.trim());
+  let url = "";
+  if(service === "google") url = `https://maps.google.com/?q=${lat},${lon}`;
+  if(service === "yandex") url = `https://yandex.ru/maps/?ll=${lon},${lat}&z=16`;
+  if(service === "2gis") url = `https://2gis.ru/?query=${lat},${lon}`;
+  window.open(url, "_blank");
+}
