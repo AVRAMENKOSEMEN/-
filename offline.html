@@ -1,11 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Оффлайн</title><link rel="stylesheet" href="style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Нет сети</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
 <body>
-  <main style="padding:18px">
-    <h2>Вы оффлайн</h2>
-    <p>Карта может быть недоступна. Используйте тестовые координаты или подключитесь к интернету.</p>
-    <button onclick="location.reload()">Попробовать снова</button>
-  </main>
+  <div class="box">
+    <h1>📡 Нет сети</h1>
+    <p>Вы офлайн. Карта недоступна.</p>
+    <p>История и сохранённые координаты будут работать.</p>
+  </div>
 </body>
 </html>
