@@ -31,3 +31,23 @@ html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;back
 .hidden{display:none}
 .dark{--bg:#0d1117;--panel:#0f1720;--primary:#1e88e5;--text:#e6eef8}
 @media(min-width:720px){.btn{flex:0 0 160px}.container{padding:12px}}
+/* добавь эти строки в конец style.css */
+
+.modal-panel {
+  z-index: 1001;              /* убеждаемся, что панель поверх оверлея */
+  position: relative;
+  display: block;
+}
+
+.modal {
+  align-items: center;
+  justify-content: center;
+}
+
+/* если у вас были display:none/inline проблемы, эти строки убедятся, что modal[open] видна */
+.modal[open] {
+  display: flex !important;
+}
+
+/* небольшая стилизация для истории */
+.history-row { padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:13px; }
