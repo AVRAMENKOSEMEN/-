@@ -1,41 +1,55 @@
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
+// Settings module (save/load)
+const SETTINGS_KEY = 'mayak_settings_v10';
+const DEFAULTS = { theme:'auto', units:'kmh', showMyLocation:true, autoFollow:true };
 
-settingsBtn.addEventListener("click", () => {
-  settingsPanel.classList.remove("hidden");
-});
-
-document.getElementById("closeSettings").addEventListener("click", () => {
-  settingsPanel.classList.add("hidden");
-});
-
-document.getElementById("saveSettings").addEventListener("click", () => {
-  const prefs = {
-    dark: document.getElementById("darkTheme").checked,
-    showMyLocation: document.getElementById("showMyLocation").checked,
-    autoFollow: document.getElementById("autoFollow").checked,
-    speedUnit: document.getElementById("speedUnit").value
-  };
-  localStorage.setItem("gpsAppSettings", JSON.stringify(prefs));
-  applySettings(prefs);
-  settingsPanel.classList.add("hidden");
-});
-
-document.getElementById("resetSettings").addEventListener("click", () => {
-  localStorage.removeItem("gpsAppSettings");
-  applySettings({});
-  settingsPanel.classList.add("hidden");
-});
-
-function applySettings(prefs) {
-  if (prefs.dark) {
-    document.body.classList.add("dark");
-  } else {
-    document.body.classList.remove("dark");
-  }
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || DEFAULTS; }
+  catch(e) { return DEFAULTS; }
 }
-
-window.addEventListener("load", () => {
-  const prefs = JSON.parse(localStorage.getItem("gpsAppSettings") || "{}");
-  applySettings(prefs);
+function saveSettings(obj) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
+  applySettings(obj);
+}
+function resetSettings() {
+  localStorage.removeItem(SETTINGS_KEY);
+  applySettings(DEFAULTS);
+}
+function applySettings(s) {
+  const root = document.documentElement;
+  if (!s) s = loadSettings();
+  if (s.theme === 'dark') root.classList.add('dark');
+  else if (s.theme === 'light') root.classList.remove('dark');
+  else {
+    // auto: follow system
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark');
+    else root.classList.remove('dark');
+  }
+  // UI elements (if present) update
+  const themeSelect = document.getElementById('themeSelect');
+  if (themeSelect) themeSelect.value = s.theme;
+  const unitsSelect = document.getElementById('unitsSelect');
+  if (unitsSelect) unitsSelect.value = s.units;
+  const showMyLocation = document.getElementById('showMyLocation');
+  if (showMyLocation) showMyLocation.checked = !!s.showMyLocation;
+  const autoFollow = document.getElementById('autoFollow');
+  if (autoFollow) autoFollow.checked = !!s.autoFollow;
+}
+document.addEventListener('DOMContentLoaded', ()=> {
+  applySettings(loadSettings());
+  // save/reset handlers
+  const saveBtn = document.getElementById('saveSettings');
+  if (saveBtn) saveBtn.addEventListener('click', ()=> {
+    const s = {
+      theme: document.getElementById('themeSelect').value,
+      units: document.getElementById('unitsSelect').value,
+      showMyLocation: document.getElementById('showMyLocation').checked,
+      autoFollow: document.getElementById('autoFollow').checked
+    };
+    saveSettings(s);
+    document.getElementById('settingsModal').removeAttribute('open');
+  });
+  const resetBtn = document.getElementById('resetSettings');
+  if (resetBtn) resetBtn.addEventListener('click', ()=> { resetSettings(); document.getElementById('settingsModal').removeAttribute('open'); });
+  const closeBtn = document.getElementById('closeSettings');
+  if (closeBtn) closeBtn.addEventListener('click', ()=> document.getElementById('settingsModal').removeAttribute('open'));
 });
