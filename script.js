@@ -16,14 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initializeMap() {
-  map = L.map("map").setView([55.75, 37.61], 13);
+  map = L.map("map").setView([54.977449, 73.470961], 13);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap"
   }).addTo(map);
 
   // Маркер маяка
-  beaconMarker = L.marker([55.75, 37.61], {
+  beaconMarker = L.marker([54.977449, 73.470961], {
     icon: L.divIcon({
       html: '🔴',
       iconSize: [20, 20],
@@ -156,15 +156,15 @@ function updateMyLocation(position) {
 
   // Расчет расстояния до маяка
   const beaconLatLng = beaconMarker.getLatLng();
-  if (beaconLatLng.lat !== 55.75 || beaconLatLng.lng !== 37.61) { // Если не начальная позиция
+  if (beaconLatLng.lat !== 54.977449 || beaconLatLng.lng !== 73.470961) { // Если не начальная позиция
     const distance = calculateDistance(lat, lon, beaconLatLng.lat, beaconLatLng.lng);
     document.getElementById("distance").textContent = `${distance.toFixed(2)} км`;
   }
 }
 
 function addTestBeacon() {
-  const lat = 55.751 + (Math.random() - 0.5) * 0.02;
-  const lon = 37.617 + (Math.random() - 0.5) * 0.02;
+  const lat = 54.977449 + (Math.random() - 0.5) * 0.02;
+  const lon = 73.470961 + (Math.random() - 0.5) * 0.02;
   updateBeacon(lat, lon);
 }
 
