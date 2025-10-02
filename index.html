@@ -2,21 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Маяк Finder</title>
+  <title>Маяк Finder v11</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <!-- Leaflet карты -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-  <!-- Верхняя панель -->
   <header class="topbar">
     <button id="menuBtn" class="icon-btn">☰</button>
     <h1>Маяк Finder</h1>
   </header>
 
-  <!-- Боковое меню -->
   <nav id="sideMenu" class="sidemenu" aria-hidden="true">
     <button id="closeMenu" class="close-btn">×</button>
     <ul>
@@ -26,25 +23,20 @@
     </ul>
   </nav>
 
-  <!-- Карта -->
   <div id="map"></div>
 
-  <!-- Нижняя панель данных -->
   <div class="databar">
     <div>Координаты: <span id="coordsVal">N/A</span></div>
     <div>Скорость: <span id="speedVal">N/A</span></div>
     <div>Расстояние: <span id="distanceVal">N/A</span></div>
   </div>
 
-  <!-- Кнопки действий -->
   <div class="actions">
     <button id="connectBtn">🔗 Подключиться</button>
     <button id="ledOnBtn">💡 Вкл LED</button>
     <button id="ledOffBtn">💡 Выкл LED</button>
     <button id="testBtn">🛰 Тест</button>
     <button id="copyBtn">📋 Копировать</button>
-    <button id="exportBtn">💾 Экспорт</button>
-    <button id="clearHistoryBtn">🧹 Очистить историю</button>
   </div>
 
   <!-- Модалка Открыть в -->
@@ -62,9 +54,10 @@
   <!-- Модалка История -->
   <div id="modalHistory" class="modal" aria-hidden="true">
     <div class="modal-panel" tabindex="-1">
-      <h2>История</h2>
+      <h2>История координат</h2>
       <div id="historyList"></div>
       <button id="exportCsv">Экспорт CSV</button>
+      <button id="clearHistory">Очистить</button>
       <button id="closeHistory">Закрыть</button>
     </div>
   </div>
@@ -83,11 +76,11 @@
       <label>Единицы:
         <select id="unitsSelect">
           <option value="kmh">км/ч</option>
-          <option value="mph">миль/ч</option>
+          <option value="ms">м/с</option>
         </select>
       </label>
       <label><input type="checkbox" id="showMyLocation" checked> Показывать моё местоположение</label>
-      <label><input type="checkbox" id="autoFollow" checked> Автоследование за маяком</label>
+      <label><input type="checkbox" id="autoFollow" checked> Автоследование</label>
       <div class="modal-actions">
         <button id="saveSettings">Сохранить</button>
         <button id="resetSettings">Сброс</button>
