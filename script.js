@@ -1,11 +1,9 @@
-// script.js
+// script.js - ОБНОВЛЕННАЯ ВЕРСИЯ
 let map;
 let beaconMarker;
 let myMarker;
 let myLocationCircle;
 let watchId = null;
-let bleDevice = null;
-let bleCharacteristic = null;
 
 // Инициализация приложения
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,8 +42,8 @@ function setupEventListeners() {
   // Кнопки управления
   document.getElementById("testBtn").addEventListener("click", addTestBeacon);
   document.getElementById("connectBtn").addEventListener("click", connectBLE);
-  document.getElementById("ledOnBtn").addEventListener("click", () => sendBLEData([0x01]));
-  document.getElementById("ledOffBtn").addEventListener("click", () => sendBLEData([0x00]));
+  document.getElementById("ledOnBtn").addEventListener("click", setLedOn);
+  document.getElementById("ledOffBtn").addEventListener("click", setLedOff);
   document.getElementById("historyBtn").addEventListener("click", showHistory);
   document.getElementById("openBtn").addEventListener("click", () => showModal("openModal"));
   document.getElementById("settingsBtn").addEventListener("click", () => showModal("settingsModal"));
@@ -195,48 +193,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
-}
-
-// BLE функции
-async function connectBLE() {
-  try {
-    if (!navigator.bluetooth) {
-      alert("Web Bluetooth не поддерживается вашим браузером");
-      return;
-    }
-
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: ['generic_access'] }],
-      optionalServices: ['battery_service', 'device_information']
-    });
-
-    bleDevice = device;
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService('generic_access');
-    bleCharacteristic = await service.getCharacteristic('gap.device_name');
-
-    document.getElementById("connectBtn").textContent = "✅ BLE Подключен";
-    alert("BLE устройство подключено!");
-    
-  } catch (error) {
-    console.error("Ошибка BLE:", error);
-    alert("Ошибка подключения BLE: " + error.message);
-  }
-}
-
-async function sendBLEData(data) {
-  if (!bleCharacteristic) {
-    alert("Сначала подключите BLE устройство");
-    return;
-  }
-
-  try {
-    await bleCharacteristic.writeValue(new Uint8Array(data));
-    console.log("Данные отправлены:", data);
-  } catch (error) {
-    console.error("Ошибка отправки данных:", error);
-    alert("Ошибка отправки данных на BLE устройство");
-  }
 }
 
 // Функции истории
