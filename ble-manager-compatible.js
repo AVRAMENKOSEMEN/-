@@ -1,4 +1,4 @@
-// ble-manager-compatible.js
+// ble-manager-compatible.js - ОБНОВЛЕННАЯ ВЕРСИЯ
 class BLEManager {
     constructor() {
         this.device = null;
@@ -10,40 +10,59 @@ class BLEManager {
 
     async connect() {
         try {
-            console.log('🔍 Поиск BLE устройств "Маяк-Приемник"...');
+            console.log('🔍 Поиск BLE устройств...');
             
+            // Упрощенный запрос - пробуем все устройства
             this.device = await navigator.bluetooth.requestDevice({
-                filters: [{
-                    services: ['12345678-1234-1234-1234-123456789abc']
-                }]
+                acceptAllDevices: true,
+                optionalServices: ['12345678-1234-1234-1234-123456789abc']
             });
 
             console.log('📱 Устройство найдено:', this.device.name);
             
             this.device.addEventListener('gattserverdisconnected', () => {
+                console.log('🔌 BLE устройство отключено');
                 this.onDisconnected();
             });
 
+            console.log('🔄 Подключение к GATT серверу...');
             this.server = await this.device.gatt.connect();
-            
+            console.log('✅ Подключено к GATT серверу');
+
+            console.log('🔄 Получение сервиса...');
             const service = await this.server.getPrimaryService('12345678-1234-1234-1234-123456789abc');
-            
+            console.log('✅ Сервис найден');
+
+            // Характеристика координат
+            console.log('🔄 Получение характеристики координат...');
             this.coordCharacteristic = await service.getCharacteristic('12345678-1234-1234-1234-123456789abd');
             await this.coordCharacteristic.startNotifications();
             this.coordCharacteristic.addEventListener('characteristicvaluechanged', 
                 (event) => this.handleCoordData(event));
-            
+            console.log('✅ Подписка на координаты');
+
+            // Характеристика LED
+            console.log('🔄 Получение характеристики LED...');
             this.ledCharacteristic = await service.getCharacteristic('12345678-1234-1234-1234-123456789abe');
+            console.log('✅ LED характеристика готова');
 
             this.isConnected = true;
             this.updateUI();
-            alert('✅ Подключено к приемнику!');
+            
+            console.log('🎉 BLE подключение установлено!');
+            alert('✅ Успешно подключено к устройству!');
             
             return true;
 
         } catch (error) {
             console.error('❌ Ошибка BLE:', error);
-            alert('Ошибка подключения: ' + error.message);
+            if (error.name === 'NotFoundError') {
+                alert('Устройства BLE не найдены.\n\nУбедитесь что:\n• ESP32 включен\n• Устройство находится рядом\n• BLE реклама активна');
+            } else if (error.name === 'SecurityError') {
+                alert('Ошибка безопасности. Используйте HTTPS для Web Bluetooth.');
+            } else {
+                alert('Ошибка подключения: ' + error.message);
+            }
             return false;
         }
     }
@@ -64,6 +83,10 @@ class BLEManager {
             if (typeof updateBeacon === 'function') {
                 updateBeacon(lat, lon, speed);
             }
+            
+            // Обновляем UI
+            document.getElementById("beaconCoords").textContent = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+            document.getElementById("speed").textContent = `${speed.toFixed(2)} км/ч`;
         }
     }
 
