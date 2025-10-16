@@ -6,19 +6,35 @@ class BLEManager {
         this.coordCharacteristic = null;
         this.ledCharacteristic = null;
         this.isConnected = false;
-        this.lastLedState = null; // Добавляем отслеживание состояния LED
+        this.lastLedState = null;
     }
 
     async connect() {
         try {
             console.log('🔍 Поиск BLE устройств...');
             
+            // ПРОБУЕМ РАЗНЫЕ ВАРИАНТЫ ФИЛЬТРОВ
             this.device = await navigator.bluetooth.requestDevice({
+                // Вариант 1: По имени (строгий)
                 filters: [{ name: 'ESP32-Receiver' }],
-                optionalServices: ['12345678-1234-1234-1234-123456789abc']
+                
+                // Вариант 2: По префиксу имени
+                // filters: [{ namePrefix: 'ESP32' }],
+                
+                // Вариант 3: По сервисам (самый надёжный)
+                // filters: [{ services: ['12345678-1234-1234-1234-123456789abc'] }],
+                
+                // Вариант 4: Без фильтров + сервисы
+                acceptAllDevices: true,
+                optionalServices: [
+                    '12345678-1234-1234-1234-123456789abc',
+                    '4fafc201-1fb5-459e-8fcc-c5c9c331914b',
+                    '0000ffe0-0000-1000-8000-00805f9b34fb' // Часто используемый сервис
+                ]
             });
 
             console.log('📱 Устройство найдено:', this.device.name);
+            console.log('🔗 ID устройства:', this.device.id);
             
             this.device.addEventListener('gattserverdisconnected', () => {
                 console.log('🔌 BLE устройство отключено');
@@ -29,42 +45,132 @@ class BLEManager {
             this.server = await this.device.gatt.connect();
             console.log('✅ Подключено к GATT серверу');
 
-            console.log('🔄 Получение сервиса...');
-            const service = await this.server.getPrimaryService('12345678-1234-1234-1234-123456789abc');
-            console.log('✅ Сервис найден');
+            // ПРОБУЕМ РАЗНЫЕ UUID СЕРВИСОВ
+            let service;
+            const serviceUUIDs = [
+                '12345678-1234-1234-1234-123456789abc',
+                '4fafc201-1fb5-459e-8fcc-c5c9c331914b',
+                '0000ffe0-0000-1000-8000-00805f9b34fb'
+            ];
 
-            // Характеристика координат
-            console.log('🔄 Получение характеристики координат...');
-            this.coordCharacteristic = await service.getCharacteristic('12345678-1234-1234-1234-123456789abd');
-            await this.coordCharacteristic.startNotifications();
-            this.coordCharacteristic.addEventListener('characteristicvaluechanged', 
-                (event) => this.handleCoordData(event));
-            console.log('✅ Подписка на координаты');
+            for (let uuid of serviceUUIDs) {
+                try {
+                    console.log(`🔄 Пробуем сервис: ${uuid}`);
+                    service = await this.server.getPrimaryService(uuid);
+                    console.log(`✅ Сервис найден: ${uuid}`);
+                    break;
+                } catch (e) {
+                    console.log(`❌ Сервис не найден: ${uuid}`);
+                }
+            }
 
-            // Характеристика LED
-            console.log('🔄 Получение характеристики LED...');
-            this.ledCharacteristic = await service.getCharacteristic('12345678-1234-1234-1234-123456789abe');
-            console.log('✅ LED характеристика готова');
+            if (!service) {
+                throw new Error('Не удалось найти подходящий сервис');
+            }
+
+            // Получаем все характеристики для отладки
+            const characteristics = await service.getCharacteristics();
+            console.log('📋 Доступные характеристики:', characteristics.length);
+            
+            characteristics.forEach(char => {
+                console.log(`🔸 Характеристика: ${char.uuid}, свойства: ${char.properties}`);
+            });
+
+            // Пробуем найти характеристику координат
+            const coordUUIDs = [
+                '12345678-1234-1234-1234-123456789abd',
+                'beb5483e-36e1-4688-b7f5-ea07361b26a8',
+                '0000ffe1-0000-1000-8000-00805f9b34fb'
+            ];
+
+            for (let uuid of coordUUIDs) {
+                try {
+                    this.coordCharacteristic = await service.getCharacteristic(uuid);
+                    await this.coordCharacteristic.startNotifications();
+                    this.coordCharacteristic.addEventListener('characteristicvaluechanged', 
+                        (event) => this.handleCoordData(event));
+                    console.log(`✅ Подписка на координаты: ${uuid}`);
+                    break;
+                } catch (e) {
+                    console.log(`❌ Характеристика координат не найдена: ${uuid}`);
+                }
+            }
+
+            // Пробуем найти характеристику LED
+            const ledUUIDs = [
+                '12345678-1234-1234-1234-123456789abe',
+                '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+                '0000ffe2-0000-1000-8000-00805f9b34fb'
+            ];
+
+            for (let uuid of ledUUIDs) {
+                try {
+                    this.ledCharacteristic = await service.getCharacteristic(uuid);
+                    console.log(`✅ LED характеристика найдена: ${uuid}`);
+                    break;
+                } catch (e) {
+                    console.log(`❌ LED характеристика не найдена: ${uuid}`);
+                }
+            }
 
             this.isConnected = true;
             this.updateUI();
             
             console.log('🎉 BLE подключение установлено!');
-            alert('✅ Успешно подключено к устройству!');
+            this.showConnectionInfo();
             
             return true;
 
         } catch (error) {
             console.error('❌ Ошибка BLE:', error);
-            if (error.name === 'NotFoundError') {
-                alert('Устройства BLE не найдены.\n\nУбедитесь что:\n• ESP32 включен\n• Устройство находится рядом\n• BLE реклама активна');
-            } else if (error.name === 'SecurityError') {
-                alert('Ошибка безопасности. Используйте HTTPS для Web Bluetooth.');
-            } else {
-                alert('Ошибка подключения: ' + error.message);
-            }
+            this.handleBLEError(error);
             return false;
         }
+    }
+
+    showConnectionInfo() {
+        const info = `
+✅ Успешно подключено к устройству!
+
+📱 Устройство: ${this.device.name}
+🔗 ID: ${this.device.id}
+📡 Сервисы: найдены
+📍 Координаты: ${this.coordCharacteristic ? '✅' : '❌'}
+💡 LED управление: ${this.ledCharacteristic ? '✅' : '❌'}
+
+Теперь можно управлять маяком!
+        `;
+        alert(info);
+    }
+
+    handleBLEError(error) {
+        let message = 'Ошибка подключения: ';
+        
+        switch(error.name) {
+            case 'NotFoundError':
+                message += 'Устройства BLE не найдены.\n\nВозможные причины:\n• ESP32 не в режиме BLE\n• Неправильное имя устройства\n• Устройство уже подключено к другому телефону';
+                break;
+            case 'SecurityError':
+                message += 'Ошибка безопасности.\n\nТребуется:\n• HTTPS соединение\n• Разрешение в настройках браузера';
+                break;
+            case 'NetworkError':
+                message += 'Ошибка сети.\n\nПроверьте:\n• Близость к устройству\n• Включен ли Bluetooth';
+                break;
+            case 'InvalidStateError':
+                message += 'Устройство уже подключено.';
+                break;
+            default:
+                message += error.message;
+        }
+        
+        alert(message);
+        
+        // Дополнительная отладка
+        console.log('🔧 Детали ошибки:', {
+            name: error.name,
+            message: error.message,
+            code: error.code
+        });
     }
 
     handleCoordData(event) {
@@ -92,12 +198,11 @@ class BLEManager {
             document.getElementById("beaconCoords").textContent = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
             document.getElementById("speed").textContent = `${speed.toFixed(2)} км/ч`;
             
-            // ОБНОВЛЯЕМ ИНДИКАТОР LED
+            // Обновляем индикатор LED
             this.updateLedIndicator(ledState);
         }
     }
 
-    // НОВАЯ ФУНКЦИЯ: Обновление индикатора LED
     updateLedIndicator(ledState) {
         const ledStatusElement = document.getElementById("ledStatus");
         if (!ledStatusElement) return;
@@ -116,10 +221,10 @@ class BLEManager {
                 break;
             case 2:
                 ledStatusElement.innerHTML = '<span class="led-indicator"></span> 🟡 МИГАНИЕ (2)';
-                ledStatusElement.classList.add('led-unknown');
+                ledStatusElement.classList.add('led-blink');
                 break;
             default:
-                ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ НЕИЗВЕСТНО';
+                ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ НЕТ ДАННЫХ';
                 ledStatusElement.classList.add('led-unknown');
         }
     }
@@ -136,11 +241,14 @@ class BLEManager {
             await this.ledCharacteristic.writeValue(value);
             console.log('💡 Команда LED отправлена:', command);
             
-            // Временно обновляем индикатор (пока не придут реальные данные)
+            // Временно обновляем индикатор
             this.updateLedIndicator(command);
+            
+            alert(`✅ Команда отправлена: LED ${state ? 'ВКЛ' : 'ВЫКЛ'}`);
             
         } catch (error) {
             console.error('Ошибка управления LED:', error);
+            alert('❌ Ошибка отправки команды LED');
         }
     }
 
@@ -160,10 +268,10 @@ class BLEManager {
         this.lastLedState = null;
         this.updateUI();
         
-        // Сбрасываем индикатор LED при отключении
+        // Сбрасываем индикатор LED
         const ledStatusElement = document.getElementById("ledStatus");
         if (ledStatusElement) {
-            ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ НЕТ ДАННЫХ';
+            ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ ОТКЛЮЧЕНО';
             ledStatusElement.className = 'led-status led-unknown';
         }
         
@@ -174,7 +282,7 @@ class BLEManager {
         const connectBtn = document.getElementById('connectBtn');
         if (connectBtn) {
             if (this.isConnected) {
-                connectBtn.textContent = '✅ BLE Подключен';
+                connectBtn.textContent = '✅ Подключено';
                 connectBtn.style.background = '#28a745';
             } else {
                 connectBtn.textContent = '🔗 Подключить BLE';
