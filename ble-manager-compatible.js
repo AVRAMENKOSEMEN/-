@@ -15,9 +15,7 @@ class BLEManager {
             
             // ИЩЕМ ПРАВИЛЬНОЕ ИМЯ - ESP32-Tracker
             this.device = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: ['12345678-1234-1234-1234-123456789abc']
-            
+                filters: [{ namePrefix: 'ESP32' }]
             });
 
             console.log('📱 Устройство найдено:', this.device.name);
