@@ -5,12 +5,20 @@
   --background: #ffffff;
   --text-color: #333333;
   --border-color: #dddddd;
+  --led-on: #4caf50;
+  --led-off: #f44336;
+  --led-unknown: #ff9800;
+  --led-blink: #ffc107;
 }
 
 .dark {
   --background: #1e1e1e;
   --text-color: #ffffff;
   --border-color: #444444;
+  --led-on: #45a049;
+  --led-off: #da190b;
+  --led-unknown: #e68900;
+  --led-blink: #e6ac00;
 }
 
 body, html {
@@ -46,6 +54,9 @@ header {
 
 #dataPanel p {
   margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .controls {
@@ -153,6 +164,83 @@ button:active {
   text-align: center;
 }
 
+/* Стили для индикатора LED */
+.led-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  transition: all 0.3s ease;
+}
+
+.led-status {
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+}
+
+.dark .led-status {
+  background: rgba(255,255,255,0.1);
+}
+
+.led-on .led-indicator {
+  background-color: var(--led-on);
+  color: var(--led-on);
+  box-shadow: 0 0 8px var(--led-on);
+}
+
+.led-off .led-indicator {
+  background-color: var(--led-off);
+  color: var(--led-off);
+}
+
+.led-blink .led-indicator {
+  background-color: var(--led-blink);
+  color: var(--led-blink);
+  animation: blink 1s infinite;
+}
+
+.led-unknown .led-indicator {
+  background-color: var(--led-unknown);
+  color: var(--led-unknown);
+  animation: pulse 2s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Стили для кнопок LED */
+#ledOnBtn {
+  background: var(--led-on);
+}
+
+#ledOnBtn:hover {
+  background: #45a049;
+}
+
+#ledOffBtn {
+  background: var(--led-off);
+}
+
+#ledOffBtn:hover {
+  background: #da190b;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .controls {
@@ -168,6 +256,17 @@ button:active {
     width: 90%;
     margin: 20px;
   }
+  
+  #dataPanel p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .led-status {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -177,5 +276,15 @@ button:active {
   
   #map {
     height: 50vh;
+  }
+  
+  button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .led-status {
+    font-size: 14px;
+    padding: 3px 10px;
   }
 }
