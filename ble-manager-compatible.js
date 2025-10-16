@@ -13,13 +13,22 @@ class BLEManager {
         try {
             console.log('🔍 Поиск BLE устройств...');
             
-            // ИЩЕМ ПРАВИЛЬНОЕ ИМЯ - ESP32-Tracker
-            this.device = await navigator.bluetooth.requestDevice({
-                optionalServices: [
-    '12345678-1234-1234-1234-123456789abc',
-    '4fafc201-1fb5-459e-8fcc-c5c9c331914b'
-]
-            });
+            // ПРОБУЕМ РАЗНЫЕ ВАРИАНТЫ ПОИСКА
+            let deviceOptions;
+            
+            // Вариант 1: По точному имени
+            deviceOptions = {
+                filters: [{ name: 'ESP32-Tracker' }],
+                optionalServices: ['12345678-1234-1234-1234-123456789abc']
+            };
+            
+            // Вариант 2: Если не работает, раскомментируй следующую строку
+            // deviceOptions = { filters: [{ namePrefix: 'ESP32' }], optionalServices: ['12345678-1234-1234-1234-123456789abc'] };
+            
+            // Вариант 3: Если всё равно не работает, раскомментируй эту
+            // deviceOptions = { acceptAllDevices: true, optionalServices: ['12345678-1234-1234-1234-123456789abc'] };
+
+            this.device = await navigator.bluetooth.requestDevice(deviceOptions);
 
             console.log('📱 Устройство найдено:', this.device.name);
             
@@ -61,7 +70,7 @@ class BLEManager {
             console.error('❌ Ошибка BLE:', error);
             
             if (error.name === 'NotFoundError') {
-                alert('Устройство "ESP32-Tracker" не найдено.\n\nУбедитесь что:\n• В логах ESP32 видно "✅ BLE запущен"\n• Устройство находится рядом\n• BLE включен на телефоне');
+                alert('Устройство "ESP32-Tracker" не найдено.\n\nПопробуйте:\n1. Перезагрузить ESP32\n2. Проверить что BLE включен\n3. Использовать другой вариант поиска в коде');
             } else if (error.name === 'SecurityError') {
                 alert('Ошибка безопасности BLE.\n\nРазрешите доступ к Bluetooth в настройках браузера.');
             } else {
