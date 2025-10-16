@@ -1,4 +1,4 @@
-// ble-manager-compatible.js - ОБНОВЛЕННАЯ ВЕРСИЯ
+// ble-manager-compatible.js
 class BLEManager {
     constructor() {
         this.device = null;
@@ -12,9 +12,8 @@ class BLEManager {
         try {
             console.log('🔍 Поиск BLE устройств...');
             
-            // Упрощенный запрос - пробуем все устройства
             this.device = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
+                filters: [{ name: 'ESP32-Receiver' }],
                 optionalServices: ['12345678-1234-1234-1234-123456789abc']
             });
 
