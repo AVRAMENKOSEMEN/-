@@ -6,6 +6,7 @@ class BLEManager {
         this.coordCharacteristic = null;
         this.ledCharacteristic = null;
         this.isConnected = false;
+        this.lastLedState = null; // Добавляем отслеживание состояния LED
     }
 
     async connect() {
@@ -74,10 +75,14 @@ class BLEManager {
         console.log('📊 Получены данные:', dataString);
         
         const parts = dataString.split(',');
-        if (parts.length >= 3) {
+        if (parts.length >= 4) {
             const lat = parseFloat(parts[0]);
             const lon = parseFloat(parts[1]);
             const speed = parseFloat(parts[2]);
+            const ledState = parseInt(parts[3]);
+            
+            // Сохраняем состояние LED
+            this.lastLedState = ledState;
             
             if (typeof updateBeacon === 'function') {
                 updateBeacon(lat, lon, speed);
@@ -86,6 +91,36 @@ class BLEManager {
             // Обновляем UI
             document.getElementById("beaconCoords").textContent = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
             document.getElementById("speed").textContent = `${speed.toFixed(2)} км/ч`;
+            
+            // ОБНОВЛЯЕМ ИНДИКАТОР LED
+            this.updateLedIndicator(ledState);
+        }
+    }
+
+    // НОВАЯ ФУНКЦИЯ: Обновление индикатора LED
+    updateLedIndicator(ledState) {
+        const ledStatusElement = document.getElementById("ledStatus");
+        if (!ledStatusElement) return;
+        
+        // Убираем все классы
+        ledStatusElement.className = 'led-status';
+        
+        switch(ledState) {
+            case 0:
+                ledStatusElement.innerHTML = '<span class="led-indicator"></span> 🔴 ВЫКЛ (0)';
+                ledStatusElement.classList.add('led-off');
+                break;
+            case 1:
+                ledStatusElement.innerHTML = '<span class="led-indicator"></span> 🟢 ВКЛ (1)';
+                ledStatusElement.classList.add('led-on');
+                break;
+            case 2:
+                ledStatusElement.innerHTML = '<span class="led-indicator"></span> 🟡 МИГАНИЕ (2)';
+                ledStatusElement.classList.add('led-unknown');
+                break;
+            default:
+                ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ НЕИЗВЕСТНО';
+                ledStatusElement.classList.add('led-unknown');
         }
     }
 
@@ -96,9 +131,14 @@ class BLEManager {
         }
 
         try {
-            const value = new Uint8Array([state ? 0x01 : 0x00]);
+            const command = state ? 1 : 0;
+            const value = new Uint8Array([command]);
             await this.ledCharacteristic.writeValue(value);
-            console.log('💡 LED:', state ? 'ВКЛ' : 'ВЫКЛ');
+            console.log('💡 Команда LED отправлена:', command);
+            
+            // Временно обновляем индикатор (пока не придут реальные данные)
+            this.updateLedIndicator(command);
+            
         } catch (error) {
             console.error('Ошибка управления LED:', error);
         }
@@ -117,7 +157,16 @@ class BLEManager {
         this.server = null;
         this.coordCharacteristic = null;
         this.ledCharacteristic = null;
+        this.lastLedState = null;
         this.updateUI();
+        
+        // Сбрасываем индикатор LED при отключении
+        const ledStatusElement = document.getElementById("ledStatus");
+        if (ledStatusElement) {
+            ledStatusElement.innerHTML = '<span class="led-indicator"></span> ❓ НЕТ ДАННЫХ';
+            ledStatusElement.className = 'led-status led-unknown';
+        }
+        
         console.log('🔌 BLE отключен');
     }
 
