@@ -1,117 +1,290 @@
-// Обновлённый BLE Manager
-class PerfectBLEManager {
-    constructor() {
-        this.device = null;
-        this.server = null;
-        this.coordCharacteristic = null;
-        this.cmdCharacteristic = null;
-        this.isConnected = false;
-    }
+// script.js
+let map;
+let beaconMarker;
+let myMarker;
+let myLocationCircle;
+let watchId = null;
 
-    async connect() {
-        try {
-            this.device = await navigator.bluetooth.requestDevice({
-                filters: [{ name: 'ESP32-Tracker' }],
-                optionalServices: [SERVICE_UUID]
-            });
+// Инициализация приложения
+document.addEventListener("DOMContentLoaded", () => {
+  initializeMap();
+  setupEventListeners();
+  loadSettings();
+  checkGeolocationSupport();
+});
 
-            this.device.addEventListener('gattserverdisconnected', () => {
-                this.onDisconnected();
-            });
+function initializeMap() {
+  map = L.map("map").setView([54.977449, 73.470961], 13);
 
-            this.server = await this.device.gatt.connect();
-            const service = await this.server.getPrimaryService(SERVICE_UUID);
-            
-            // Характеристика координат
-            this.coordCharacteristic = await service.getCharacteristic(COORD_CHAR_UUID);
-            await this.coordCharacteristic.startNotifications();
-            this.coordCharacteristic.addEventListener('characteristicvaluechanged', 
-                (e) => this.handleCoordData(e));
-            
-            // Характеристика команд
-            this.cmdCharacteristic = await service.getCharacteristic(CMD_CHAR_UUID);
-            
-            this.isConnected = true;
-            this.updateUI();
-            
-            alert('✅ Подключено к трекеру!');
-            return true;
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
 
-        } catch (error) {
-            console.error('Ошибка BLE:', error);
-            alert('Ошибка подключения: ' + error.message);
-            return false;
-        }
-    }
+  // Маркер маяка
+  beaconMarker = L.marker([54.977449, 73.470961], {
+    icon: L.divIcon({
+      html: '🔴',
+      iconSize: [20, 20],
+      className: 'beacon-marker'
+    })
+  }).addTo(map).bindPopup("Маяк");
 
-    handleCoordData(event) {
-        const value = new TextDecoder().decode(event.target.value);
-        const [lat, lon, speed, ledState] = value.split(',');
-        
-        if (window.updateBeacon) {
-            updateBeacon(parseFloat(lat), parseFloat(lon), parseFloat(speed));
-        }
-        
-        // Обновление интерфейса
-        document.getElementById("beaconCoords").textContent = 
-            `${parseFloat(lat).toFixed(6)}, ${parseFloat(lon).toFixed(6)}`;
-        document.getElementById("speed").textContent = 
-            `${parseFloat(speed).toFixed(1)} км/ч`;
-        document.getElementById("ledStatus").textContent = 
-            ledState === '1' ? '🟢 ВКЛ' : '🔴 ВЫКЛ';
-    }
-
-    async sendLedCommand(state) {
-        if (!this.cmdCharacteristic || !this.isConnected) {
-            alert('Сначала подключитесь к устройству');
-            return;
-        }
-
-        try {
-            const value = new Uint8Array([state]);
-            await this.cmdCharacteristic.writeValue(value);
-            console.log('Команда LED отправлена:', state);
-        } catch (error) {
-            console.error('Ошибка отправки команды:', error);
-        }
-    }
-
-    disconnect() {
-        if (this.device?.gatt.connected) {
-            this.device.gatt.disconnect();
-        }
-        this.onDisconnected();
-    }
-
-    onDisconnected() {
-        this.isConnected = false;
-        this.device = null;
-        this.server = null;
-        this.updateUI();
-    }
-
-    updateUI() {
-        const btn = document.getElementById('connectBtn');
-        if (btn) {
-            btn.textContent = this.isConnected ? '✅ Подключено' : '🔗 Подключить BLE';
-            btn.style.background = this.isConnected ? '#28a745' : '#007bff';
-        }
-    }
+  // Круг точности местоположения
+  myLocationCircle = L.circle([0, 0], {
+    color: 'blue',
+    fillColor: '#00f',
+    fillOpacity: 0.1,
+    radius: 1
+  }).addTo(map);
 }
 
-const bleManager = new PerfectBLEManager();
+function setupEventListeners() {
+  // Кнопки управления
+  document.getElementById("connectBtn").addEventListener("click", connectBLE);
+  document.getElementById("ledOnBtn").addEventListener("click", setLedOn);
+  document.getElementById("ledOffBtn").addEventListener("click", setLedOff);
+  document.getElementById("historyBtn").addEventListener("click", showHistory);
+  document.getElementById("openBtn").addEventListener("click", () => showModal("openModal"));
+  document.getElementById("settingsBtn").addEventListener("click", () => showModal("settingsModal"));
+  document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
 
-// Функции для интерфейса
-function connectBLE() {
-    bleManager.connect();
+  // Модальные окна
+  document.getElementById("closeOpen").addEventListener("click", () => hideModal("openModal"));
+  document.getElementById("closeHistory").addEventListener("click", () => hideModal("historyModal"));
+  document.getElementById("closeSettings").addEventListener("click", () => hideModal("settingsModal"));
+  document.getElementById("modalOverlay").addEventListener("click", hideAllModals);
+
+  // Действия в модальных окнах
+  document.getElementById("exportHistory").addEventListener("click", exportHistory);
+  document.getElementById("openGoogle").addEventListener("click", () => openMap("google"));
+  document.getElementById("openYandex").addEventListener("click", () => openMap("yandex"));
+  document.getElementById("open2gis").addEventListener("click", () => openMap("2gis"));
 }
 
-function ledOn() {
-    bleManager.sendLedCommand(1);
-    document.getElementById("ledStatus").textContent = "🟢 ВКЛ";
+function checkGeolocationSupport() {
+  if (!navigator.geolocation) {
+    alert("Геолокация не поддерживается вашим браузером");
+    return;
+  }
+  
+  // Запрос разрешения на геолокацию
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      startTracking();
+    },
+    (error) => {
+      console.error("Ошибка геолокации:", error);
+      alert("Для работы приложения необходимо разрешить доступ к геолокации");
+    }
+  );
 }
 
-function ledOff() {
-    bleManager.sendLedCommand(0);
-    document.getElementById("ledStatus").textContent = "🔴 ВЫКЛ";
+function startTracking() {
+  const settings = loadSettings();
+  
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      updateMyLocation(position);
+    },
+    (error) => {
+      console.error("Ошибка отслеживания:", error);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 5000
+    }
+  );
+}
+
+function updateMyLocation(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  const speed = position.coords.speed;
+  const accuracy = position.coords.accuracy;
+
+  // Обновление информации в UI
+  document.getElementById("myCoords").textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  
+  // Обновление скорости
+  const settings = loadSettings();
+  let speedText = "N/A";
+  if (speed !== null) {
+    if (settings.units === 'ms') {
+      speedText = `${speed.toFixed(2)} м/с`;
+    } else {
+      speedText = `${(speed * 3.6).toFixed(2)} км/ч`;
+    }
+  }
+  document.getElementById("speed").textContent = speedText;
+
+  // Обновление маркера на карте
+  if (settings.showMyLocation) {
+    if (!myMarker) {
+      myMarker = L.marker([lat, lon], {
+        icon: L.divIcon({
+          html: '🔵',
+          iconSize: [20, 20],
+          className: 'my-marker'
+        })
+      }).addTo(map).bindPopup("Моё местоположение");
+    } else {
+      myMarker.setLatLng([lat, lon]);
+    }
+
+    // Обновление круга точности
+    myLocationCircle.setLatLng([lat, lon]);
+    myLocationCircle.setRadius(accuracy);
+
+    // Автоматическое слежение
+    if (settings.autoFollow) {
+      map.setView([lat, lon], map.getZoom());
+    }
+  } else {
+    if (myMarker) {
+      map.removeLayer(myMarker);
+      myMarker = null;
+    }
+  }
+
+  // Расчет расстояния до маяка
+  const beaconLatLng = beaconMarker.getLatLng();
+  if (beaconLatLng.lat !== 54.977449 || beaconLatLng.lng !== 73.470961) { // Если не начальная позиция
+    const distance = calculateDistance(lat, lon, beaconLatLng.lat, beaconLatLng.lng);
+    document.getElementById("distance").textContent = `${distance.toFixed(2)} км`;
+  }
+}
+
+function updateBeacon(lat, lon, speed = null) {
+  beaconMarker.setLatLng([lat, lon])
+    .bindPopup(`Маяк: ${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+  
+  document.getElementById("beaconCoords").textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  
+  // Добавление в историю
+  HistoryManager.add(lat, lon, speed);
+  
+  // Обновление расстояния
+  if (myMarker) {
+    const myLatLng = myMarker.getLatLng();
+    const distance = calculateDistance(myLatLng.lat, myLatLng.lng, lat, lon);
+    document.getElementById("distance").textContent = `${distance.toFixed(2)} км`;
+  }
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Радиус Земли в км
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Функции истории
+function showHistory() {
+  const history = HistoryManager.load();
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+
+  if (history.length === 0) {
+    list.innerHTML = "<li>История пуста</li>";
+  } else {
+    history.slice(-20).reverse().forEach(point => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <small>${new Date(point.time).toLocaleString()}</small><br>
+        ${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}
+        ${point.speed ? ` | ${point.speed.toFixed(2)} м/с` : ''}
+      `;
+      li.style.marginBottom = "8px";
+      li.style.padding = "5px";
+      li.style.borderBottom = "1px solid #eee";
+      list.appendChild(li);
+    });
+  }
+  showModal("historyModal");
+}
+
+function exportHistory() {
+  const csv = HistoryManager.exportCSV();
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mayak_history_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function clearHistory() {
+  if (confirm("Вы уверены, что хотите очистить всю историю?")) {
+    HistoryManager.clear();
+    alert("История очищена");
+  }
+}
+
+// Функции модальных окон
+function showModal(id) {
+  document.getElementById("modalOverlay").classList.remove("hidden");
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function hideModal(id) {
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.getElementById(id).classList.add("hidden");
+}
+
+function hideAllModals() {
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.classList.add("hidden");
+  });
+}
+
+function openMap(service) {
+  const coords = document.getElementById("beaconCoords").textContent;
+  if (coords === "N/A") {
+    alert("Сначала установите координаты маяка");
+    return;
+  }
+
+  const [lat, lon] = coords.split(",").map(x => parseFloat(x.trim()));
+  let url = "";
+
+  switch (service) {
+    case "google":
+      url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      break;
+    case "yandex":
+      url = `https://yandex.ru/maps/?text=${lat},${lon}&z=15`;
+      break;
+    case "2gis":
+      url = `https://2gis.ru/geo/${lon},${lat}`;
+      break;
+  }
+
+  window.open(url, "_blank");
+}
+
+// Регистрация Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('SW registered: ', registration);
+      })
+      .catch(registrationError => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
 }
