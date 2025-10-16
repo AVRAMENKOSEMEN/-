@@ -9,6 +9,8 @@
   --led-off: #f44336;
   --led-unknown: #ff9800;
   --led-blink: #ffc107;
+  --history-color: #9c27b0;
+  --history-dark: #7b1fa2;
 }
 
 .dark {
@@ -19,6 +21,8 @@
   --led-off: #da190b;
   --led-unknown: #e68900;
   --led-blink: #e6ac00;
+  --history-color: #ab47bc;
+  --history-dark: #8e24aa;
 }
 
 body, html {
@@ -61,11 +65,22 @@ header {
 
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
   padding: 15px;
   background: var(--background);
+}
+
+/* СТРОКИ С КНОПКАМИ */
+.button-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.button-row button {
+  flex: 1;
+  min-width: 0; /* Убираем минимальную ширину */
 }
 
 button {
@@ -86,6 +101,99 @@ button:hover {
 
 button:active {
   transform: translateY(1px);
+}
+
+/* СТИЛИ ДЛЯ КНОПОК LED */
+.led-btn {
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+#ledOnBtn {
+  background: var(--led-on);
+}
+
+#ledOnBtn:hover {
+  background: #45a049;
+}
+
+#ledOffBtn {
+  background: var(--led-off);
+}
+
+#ledOffBtn:hover {
+  background: #da190b;
+}
+
+/* СТИЛИ ДЛЯ КНОПОК ИСТОРИИ */
+.history-btn {
+  background: var(--history-color);
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.history-btn:hover {
+  background: var(--history-dark);
+}
+
+/* Стили для индикатора LED */
+.led-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  transition: all 0.3s ease;
+}
+
+.led-status {
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+}
+
+.dark .led-status {
+  background: rgba(255,255,255,0.1);
+}
+
+.led-on .led-indicator {
+  background-color: var(--led-on);
+  color: var(--led-on);
+  box-shadow: 0 0 8px var(--led-on);
+}
+
+.led-off .led-indicator {
+  background-color: var(--led-off);
+  color: var(--led-off);
+}
+
+.led-blink .led-indicator {
+  background-color: var(--led-blink);
+  color: var(--led-blink);
+  animation: blink 1s infinite;
+}
+
+.led-unknown .led-indicator {
+  background-color: var(--led-unknown);
+  color: var(--led-unknown);
+  animation: pulse 2s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 .modal {
@@ -164,108 +272,30 @@ button:active {
   text-align: center;
 }
 
-/* Стили для индикатора LED */
-.led-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  border: 2px solid currentColor;
-  transition: all 0.3s ease;
-}
-
-.led-status {
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0,0,0,0.05);
-  border: 1px solid var(--border-color);
-}
-
-.dark .led-status {
-  background: rgba(255,255,255,0.1);
-}
-
-.led-on .led-indicator {
-  background-color: var(--led-on);
-  color: var(--led-on);
-  box-shadow: 0 0 8px var(--led-on);
-}
-
-.led-off .led-indicator {
-  background-color: var(--led-off);
-  color: var(--led-off);
-}
-
-.led-blink .led-indicator {
-  background-color: var(--led-blink);
-  color: var(--led-blink);
-  animation: blink 1s infinite;
-}
-
-.led-unknown .led-indicator {
-  background-color: var(--led-unknown);
-  color: var(--led-unknown);
-  animation: pulse 2s infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.3; }
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* Стили для кнопок LED */
-#ledOnBtn {
-  background: var(--led-on);
-}
-
-#ledOnBtn:hover {
-  background: #45a049;
-}
-
-#ledOffBtn {
-  background: var(--led-off);
-}
-
-#ledOffBtn:hover {
-  background: #da190b;
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
   .controls {
-    flex-direction: column;
-    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .button-row {
+    gap: 6px;
   }
   
   button {
     min-width: auto;
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+  
+  .led-btn, .history-btn {
+    font-size: 12px;
+    padding: 8px 6px;
   }
   
   .modal {
     width: 90%;
     margin: 20px;
-  }
-  
-  #dataPanel p {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .led-status {
-    align-self: flex-start;
-    margin-top: 4px;
   }
 }
 
@@ -279,12 +309,23 @@ button:active {
   }
   
   button {
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 8px 6px;
+    font-size: 12px;
   }
   
   .led-status {
     font-size: 14px;
     padding: 3px 10px;
+  }
+  
+  #dataPanel p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .led-status {
+    align-self: flex-start;
+    margin-top: 4px;
   }
 }
