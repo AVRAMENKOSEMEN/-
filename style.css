@@ -74,12 +74,16 @@ header h1 {
   gap: 20px;
   align-items: center;
   margin: 8px 0;
+  padding: 6px 0;
 }
 
+.compact-data-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
 .compact-data-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   font-size: 15px;
 }
 
@@ -91,7 +95,19 @@ header h1 {
 .compact-data-value {
   font-weight: normal;
 }
-
+/* Адаптивность */
+@media (max-width: 768px) {
+  .compact-data-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .compact-data-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 .controls {
   display: flex;
   flex-wrap: wrap;
