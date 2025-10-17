@@ -1,167 +1,51 @@
+<!-- offline.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Маяк Finder - Оффлайн</title>
+  <title>Нет сети - Маяк Finder</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     body {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      height: 100vh;
+      margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       text-align: center;
-      padding: 20px;
     }
-    
-    .offline-container {
+    .box {
       background: rgba(255,255,255,0.1);
-      padding: 40px 30px;
+      padding: 40px;
       border-radius: 20px;
       backdrop-filter: blur(10px);
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
+      max-width: 400px;
     }
-    
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 1.1em;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
     .icon {
       font-size: 4em;
       margin-bottom: 20px;
-      animation: float 3s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 20px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    p {
-      font-size: 1.1em;
-      line-height: 1.6;
-      margin-bottom: 15px;
-      opacity: 0.9;
-    }
-    
-    .features {
-      text-align: left;
-      margin: 25px 0;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
-      border-left: 4px solid #4CAF50;
-    }
-    
-    .features strong {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 1.1em;
-    }
-    
-    .features ul {
-      list-style: none;
-      padding: 0;
-    }
-    
-    .features li {
-      margin: 12px 0;
-      padding-left: 25px;
-      position: relative;
-    }
-    
-    .features li:before {
-      content: "✅";
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-    
-    .reload-btn {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 14px 28px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: all 0.3s ease;
-      font-weight: bold;
-    }
-    
-    .reload-btn:hover {
-      background: #45a049;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    .network-info {
-      margin-top: 25px;
-      padding: 15px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      font-size: 0.9em;
-      opacity: 0.8;
-    }
-    
-    @media (max-width: 480px) {
-      .offline-container {
-        padding: 30px 20px;
-      }
-      
-      h1 {
-        font-size: 1.8em;
-      }
-      
-      .icon {
-        font-size: 3em;
-      }
     }
   </style>
 </head>
 <body>
-  <div class="offline-container">
+  <div class="box">
     <div class="icon">📡</div>
-    <h1>Режим оффлайн</h1>
-    <p>Вы сейчас не в сети, но приложение продолжает работать!</p>
-    
-    <div class="features">
-      <strong>Доступные функции:</strong>
-      <ul>
-        <li>Просмотр карты (если была загружена ранее)</li>
-        <li>История координат и настройки</li>
-        <li>Управление BLE устройствами</li>
-        <li>Локальные вычисления расстояний</li>
-        <li>Работа с геолокацией</li>
-        <li>Все данные хранятся локально</li>
-      </ul>
-    </div>
-
-    <p>Как только соединение восстановится, карта автоматически обновится.</p>
-    
-    <button class="reload-btn" onclick="location.reload()">
-      🔄 Обновить страницу
-    </button>
-    
-    <div class="network-info">
-      💡 <strong>Совет:</strong> Для полной функциональности карт 
-      нужно подключение к интернету
-    </div>
+    <h1>Нет соединения</h1>
+    <p>Вы сейчас офлайн. Карта может быть недоступна.</p>
+    <p>Локальные функции (история, настройки) продолжают работать.</p>
+    <p>Проверьте подключение к интернету и попробуйте снова.</p>
   </div>
 </body>
 </html>
