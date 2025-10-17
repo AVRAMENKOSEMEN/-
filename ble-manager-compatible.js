@@ -50,13 +50,18 @@ class BLEManager {
             this.updateUI();
             
             console.log('🎉 BLE подключение установлено!');
-            this.showNotification('✅ Успешно подключено к устройству!');
             
             return true;
 
         } catch (error) {
             console.error('❌ Ошибка BLE:', error);
-            this.handleBLEError(error);
+            if (error.name === 'NotFoundError') {
+                alert('Устройство "ESP32-Tracker" не найдено.\n\nУбедитесь что:\n• ESP32 включен\n• Устройство находится рядом\n• BLE реклама активна');
+            } else if (error.name === 'SecurityError') {
+                alert('Ошибка безопасности. Используйте HTTPS для Web Bluetooth.');
+            } else {
+                alert('Ошибка подключения: ' + error.message);
+            }
             return false;
         }
     }
@@ -119,7 +124,6 @@ class BLEManager {
 
     async setLed(state) {
         if (!this.ledCharacteristic || !this.isConnected) {
-            this.showNotification('Сначала подключитесь к устройству');
             return;
         }
 
@@ -132,11 +136,8 @@ class BLEManager {
             // Временно обновляем индикатор
             this.updateLedIndicator(command);
             
-            this.showNotification(`LED ${state ? 'включен' : 'выключен'}`);
-            
         } catch (error) {
             console.error('Ошибка управления LED:', error);
-            this.showNotification('❌ Ошибка отправки команды');
         }
     }
 
@@ -164,7 +165,6 @@ class BLEManager {
         }
         
         console.log('🔌 BLE отключен');
-        this.showNotification('🔌 BLE отключено');
     }
 
     updateUI() {
@@ -177,35 +177,6 @@ class BLEManager {
                 connectBtn.textContent = '🔗 Подключить BLE';
                 connectBtn.style.background = '#1976d2';
             }
-        }
-    }
-
-    handleBLEError(error) {
-        let message = 'Ошибка подключения: ';
-        
-        switch(error.name) {
-            case 'NotFoundError':
-                message = 'Устройство "ESP32-Tracker" не найдено.\n\nУбедитесь что:\n• ESP32 включен\n• Устройство находится рядом\n• BLE реклама активна';
-                break;
-            case 'SecurityError':
-                message = 'Ошибка безопасности.\n\nРазрешите доступ к Bluetooth в настройках браузера.';
-                break;
-            case 'NetworkError':
-                message = 'Ошибка сети BLE.\n\nПроверьте подключение Bluetooth.';
-                break;
-            default:
-                message += error.message;
-        }
-        
-        this.showNotification(message);
-    }
-
-    showNotification(message) {
-        // Простое уведомление
-        if (typeof alert === 'function') {
-            alert(message);
-        } else {
-            console.log('📢', message);
         }
     }
 }
