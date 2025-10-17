@@ -295,7 +295,8 @@ function openMap(service) {
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    // Используйте относительный путь
+    navigator.serviceWorker.register('./service-worker.js')
       .then(registration => {
         console.log('SW registered: ', registration);
       })
