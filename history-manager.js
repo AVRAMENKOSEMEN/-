@@ -46,6 +46,37 @@ const HistoryManager = {
     }
   },
 
+  exportGPX() {
+    const arr = this.load();
+    let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Маяк Finder" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Трек маяка</name>
+    <desc>Трек координат маяка</desc>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>Трек маяка</name>
+    <trkseg>
+`;
+    
+    arr.forEach(point => {
+      const time = new Date(point.time).toISOString();
+      gpx += `      <trkpt lat="${point.lat}" lon="${point.lon}">\n`;
+      if (point.speed) {
+        gpx += `        <speed>${point.speed}</speed>\n`;
+      }
+      gpx += `        <time>${time}</time>\n`;
+      gpx += `      </trkpt>\n`;
+    });
+    
+    gpx += `    </trkseg>
+  </trk>
+</gpx>`;
+    
+    return gpx;
+  },
+
   exportCSV() {
     const arr = this.load();
     let csv = 'lat,lon,speed,timestamp,datetime\n';
