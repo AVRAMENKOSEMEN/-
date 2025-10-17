@@ -55,7 +55,8 @@ function setupEventListeners() {
   document.getElementById("modalOverlay").addEventListener("click", hideAllModals);
 
   // Действия в модальных окнах
-  document.getElementById("exportHistory").addEventListener("click", exportHistory);
+  document.getElementById("exportGPX").addEventListener("click", exportGPX);
+  document.getElementById("exportCSV").addEventListener("click", exportCSV);
   document.getElementById("openGoogle").addEventListener("click", () => openMap("google"));
   document.getElementById("openYandex").addEventListener("click", () => openMap("yandex"));
   document.getElementById("open2gis").addEventListener("click", () => openMap("2gis"));
@@ -213,7 +214,22 @@ function showHistory() {
   showModal("historyModal");
 }
 
-function exportHistory() {
+// Экспорт в GPX формате
+function exportGPX() {
+  const gpx = HistoryManager.exportGPX();
+  const blob = new Blob([gpx], { type: "application/gpx+xml;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mayak_track_${new Date().toISOString().slice(0,10)}.gpx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Экспорт в CSV формате
+function exportCSV() {
   const csv = HistoryManager.exportCSV();
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
