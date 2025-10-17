@@ -436,3 +436,14 @@ button:active {
     padding: 10px 8px;
   }
 }
+/* Убедитесь что compact-data-row работает для LED статуса */
+.compact-data-row:last-child {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.compact-data-row:last-child .compact-data-item {
+  width: 100%;
+  justify-content: space-between;
+}
