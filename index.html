@@ -21,28 +21,32 @@
 
     <div id="dataPanel">
       <p><strong>Координаты маяка:</strong> <span id="beaconCoords">N/A</span></p>
-      <p><strong>Моё местоположение:</strong> <span id="myCoords">N/A</span></p>
-      <p><strong>Расстояние:</strong> <span id="distance">N/A</span></p>
-      <p><strong>Скорость:</strong> <span id="speed">N/A</span></p>
+      
+      <div class="compact-data-row">
+        <div class="compact-data-item">
+          <span class="compact-data-label">Моё местоположение:</span>
+          <span class="compact-data-value" id="myCoords">N/A</span>
+        </div>
+        <div class="compact-data-item">
+          <span class="compact-data-label">Расстояние:</span>
+          <span class="compact-data-value" id="distance">N/A</span>
+        </div>
+        <div class="compact-data-item">
+          <span class="compact-data-label">Скорость:</span>
+          <span class="compact-data-value" id="speed">N/A</span>
+        </div>
+      </div>
+      
       <p><strong>Статус LED на маяке:</strong> <span id="ledStatus">❓ Неизвестно</span></p>
     </div>
 
     <div class="controls">
       <button id="connectBtn">🔗 Подключить BLE</button>
-      
-      <!-- КНОПКИ LED В ОДНОЙ СТРОКЕ -->
-      <div class="button-row">
-        <button id="ledOnBtn" class="led-btn">💡 ВКЛ</button>
-        <button id="ledOffBtn" class="led-btn">💤 ВЫКЛ</button>
-      </div>
-      
-      <!-- КНОПКИ ИСТОРИИ В ОДНОЙ СТРОКЕ -->
-      <div class="button-row">
-        <button id="historyBtn" class="history-btn">📜 История</button>
-        <button id="clearHistoryBtn" class="history-btn">🗑️ Очистить</button>
-      </div>
-      
-      <button id="openBtn">🌍 Открыть в картах</button>
+      <button id="ledOnBtn">💡 LED Вкл</button>
+      <button id="ledOffBtn">💤 LED Выкл</button>
+      <button id="historyBtn">📜 История</button>
+      <button id="openBtn">🌍 Открыть</button>
+      <button id="clearHistoryBtn">🗑️ Очистить историю</button>
     </div>
   </main>
 
