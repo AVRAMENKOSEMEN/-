@@ -374,3 +374,12 @@ button:active {
     padding: 10px 8px;
   }
 }
+/* Стили для кнопок экспорта */
+#exportGPX, #exportCSV {
+  background: #28a745;
+  min-width: 140px;
+}
+
+#exportGPX:hover, #exportCSV:hover {
+  background: #218838;
+}
