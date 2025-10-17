@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = 'mayak-finder-v4';
+const CACHE_NAME = 'mayak-finder-v5';
 const OFFLINE_URL = './offline.html';
 
 // Ресурсы для кэширования при установке
@@ -61,17 +61,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Для навигационных запросов (страниц) - всегда отдаём из кэша
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      caches.match(OFFLINE_URL).then(cachedResponse => {
-        return cachedResponse || fetch(event.request);
-      })
-    );
-    return;
-  }
-
-  // Для остальных запросов - стратегия "сначала кэш, потом сеть"
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -99,9 +88,15 @@ self.addEventListener('fetch', event => {
           .catch(error => {
             console.log('🌐 Оффлайн режим для:', event.request.url);
             
-            // Для API запросов возвращаем пустой ответ
-            return new Response(JSON.stringify({ offline: true }), {
-              headers: { 'Content-Type': 'application/json' }
+            // Только для навигационных запросов возвращаем оффлайн страницу
+            if (event.request.mode === 'navigate') {
+              return caches.match(OFFLINE_URL);
+            }
+            
+            // Для остальных запросов возвращаем ошибку
+            return new Response('Оффлайн', {
+              status: 503,
+              statusText: 'Service Unavailable'
             });
           });
       })
