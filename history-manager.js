@@ -59,5 +59,28 @@ const HistoryManager = {
   getLastPoints(count = 10) {
     const arr = this.load();
     return arr.slice(-count);
+  },
+  
+  getPointsByDate(startDate, endDate) {
+    const arr = this.load();
+    return arr.filter(point => {
+      const pointDate = new Date(point.time);
+      return pointDate >= startDate && pointDate <= endDate;
+    });
+  },
+  
+  getStats() {
+    const arr = this.load();
+    if (arr.length === 0) return null;
+    
+    return {
+      totalPoints: arr.length,
+      firstPoint: arr[0],
+      lastPoint: arr[arr.length - 1],
+      dateRange: {
+        start: new Date(arr[0].time),
+        end: new Date(arr[arr.length - 1].time)
+      }
+    };
   }
 };
