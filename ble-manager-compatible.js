@@ -13,22 +13,10 @@ class BLEManager {
         try {
             console.log('🔍 Поиск BLE устройств...');
             
-            // ПРОБУЕМ РАЗНЫЕ ВАРИАНТЫ ПОИСКА
-            let deviceOptions;
-            
-            // Вариант 1: По точному имени
-            deviceOptions = {
+            this.device = await navigator.bluetooth.requestDevice({
                 filters: [{ name: 'ESP32-Tracker' }],
                 optionalServices: ['12345678-1234-1234-1234-123456789abc']
-            };
-            
-            // Вариант 2: Если не работает, раскомментируй следующую строку
-            // deviceOptions = { filters: [{ namePrefix: 'ESP32' }], optionalServices: ['12345678-1234-1234-1234-123456789abc'] };
-            
-            // Вариант 3: Если всё равно не работает, раскомментируй эту
-            // deviceOptions = { acceptAllDevices: true, optionalServices: ['12345678-1234-1234-1234-123456789abc'] };
-
-            this.device = await navigator.bluetooth.requestDevice(deviceOptions);
+            });
 
             console.log('📱 Устройство найдено:', this.device.name);
             
@@ -62,20 +50,13 @@ class BLEManager {
             this.updateUI();
             
             console.log('🎉 BLE подключение установлено!');
-            alert('✅ Успешно подключено к устройству!');
+            this.showNotification('✅ Успешно подключено к устройству!');
             
             return true;
 
         } catch (error) {
             console.error('❌ Ошибка BLE:', error);
-            
-            if (error.name === 'NotFoundError') {
-                alert('Устройство "ESP32-Tracker" не найдено.\n\nПопробуйте:\n1. Перезагрузить ESP32\n2. Проверить что BLE включен\n3. Использовать другой вариант поиска в коде');
-            } else if (error.name === 'SecurityError') {
-                alert('Ошибка безопасности BLE.\n\nРазрешите доступ к Bluetooth в настройках браузера.');
-            } else {
-                alert('Ошибка подключения: ' + error.message);
-            }
+            this.handleBLEError(error);
             return false;
         }
     }
@@ -138,7 +119,7 @@ class BLEManager {
 
     async setLed(state) {
         if (!this.ledCharacteristic || !this.isConnected) {
-            alert('Сначала подключитесь к устройству');
+            this.showNotification('Сначала подключитесь к устройству');
             return;
         }
 
@@ -151,8 +132,11 @@ class BLEManager {
             // Временно обновляем индикатор
             this.updateLedIndicator(command);
             
+            this.showNotification(`LED ${state ? 'включен' : 'выключен'}`);
+            
         } catch (error) {
             console.error('Ошибка управления LED:', error);
+            this.showNotification('❌ Ошибка отправки команды');
         }
     }
 
@@ -180,6 +164,7 @@ class BLEManager {
         }
         
         console.log('🔌 BLE отключен');
+        this.showNotification('🔌 BLE отключено');
     }
 
     updateUI() {
@@ -192,6 +177,35 @@ class BLEManager {
                 connectBtn.textContent = '🔗 Подключить BLE';
                 connectBtn.style.background = '#1976d2';
             }
+        }
+    }
+
+    handleBLEError(error) {
+        let message = 'Ошибка подключения: ';
+        
+        switch(error.name) {
+            case 'NotFoundError':
+                message = 'Устройство "ESP32-Tracker" не найдено.\n\nУбедитесь что:\n• ESP32 включен\n• Устройство находится рядом\n• BLE реклама активна';
+                break;
+            case 'SecurityError':
+                message = 'Ошибка безопасности.\n\nРазрешите доступ к Bluetooth в настройках браузера.';
+                break;
+            case 'NetworkError':
+                message = 'Ошибка сети BLE.\n\nПроверьте подключение Bluetooth.';
+                break;
+            default:
+                message += error.message;
+        }
+        
+        this.showNotification(message);
+    }
+
+    showNotification(message) {
+        // Простое уведомление
+        if (typeof alert === 'function') {
+            alert(message);
+        } else {
+            console.log('📢', message);
         }
     }
 }
