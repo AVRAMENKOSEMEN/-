@@ -99,13 +99,16 @@
   </div>
 
   <div id="historyModal" class="modal hidden">
-    <h2>📜 История координат</h2>
-    <div id="historyListContainer" style="max-height: 300px; overflow-y: auto; margin: 10px 0;">
-      <ul id="historyList"></ul>
-    </div>
-    <button id="exportHistory">⬇️ Экспорт CSV</button>
-    <button id="closeHistory">Закрыть</button>
+  <h2>📜 История координат</h2>
+  <div id="historyListContainer" style="max-height: 300px; overflow-y: auto; margin: 10px 0;">
+    <ul id="historyList"></ul>
   </div>
+  <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+    <button id="exportGPX">⬇️ Экспорт GPX</button>
+    <button id="exportCSV">⬇️ Экспорт CSV</button>
+  </div>
+  <button id="closeHistory" style="margin-top: 10px; width: 100%;">Закрыть</button>
+</div>
 
   <div id="openModal" class="modal hidden">
     <h2>🌍 Открыть в приложении</h2>
