@@ -60,21 +60,13 @@ header h1 {
   font-size: 15px;
 }
 
-#dataPanel p {
-  margin: 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 /* Компактное расположение данных в одну строку */
 .compact-data-row {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   align-items: center;
-  margin: 8px 0;
-  padding: 6px 0;
+  margin: 6px 0;
 }
 
 .compact-data-item {
@@ -92,26 +84,28 @@ header h1 {
 .compact-data-value {
   font-weight: normal;
 }
-/* Адаптивность */
-@media (max-width: 768px) {
-  .compact-data-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .compact-data-item {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
+
 .controls {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 15px;
   background: var(--background);
+}
+
+/* Стили для кнопок в одной строке */
+.button-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.button-row button {
+  flex: 1;
+  min-width: 0;
+  max-width: 160px;
 }
 
 button {
@@ -134,6 +128,84 @@ button:active {
   transform: translateY(1px);
 }
 
+/* Стили для кнопок LED */
+#ledOnBtn {
+  background: var(--led-on);
+}
+
+#ledOnBtn:hover {
+  background: #45a049;
+}
+
+#ledOffBtn {
+  background: var(--led-off);
+}
+
+#ledOffBtn:hover {
+  background: #da190b;
+}
+
+/* Стили для индикатора LED */
+.led-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  transition: all 0.3s ease;
+}
+
+.led-status {
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+}
+
+.dark .led-status {
+  background: rgba(255,255,255,0.1);
+}
+
+.led-on .led-indicator {
+  background-color: var(--led-on);
+  color: var(--led-on);
+  box-shadow: 0 0 8px var(--led-on);
+}
+
+.led-off .led-indicator {
+  background-color: var(--led-off);
+  color: var(--led-off);
+}
+
+.led-blink .led-indicator {
+  background-color: var(--led-blink);
+  color: var(--led-blink);
+  animation: blink 1s infinite;
+}
+
+.led-unknown .led-indicator {
+  background-color: var(--led-unknown);
+  color: var(--led-unknown);
+  animation: pulse 2s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Модальные окна */
 .modal {
   position: fixed;
   top: 50%;
@@ -210,88 +282,20 @@ button:active {
   text-align: center;
 }
 
-/* Стили для индикатора LED */
-.led-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  border: 2px solid currentColor;
-  transition: all 0.3s ease;
-}
-
-.led-status {
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0,0,0,0.05);
-  border: 1px solid var(--border-color);
-}
-
-.dark .led-status {
-  background: rgba(255,255,255,0.1);
-}
-
-.led-on .led-indicator {
-  background-color: var(--led-on);
-  color: var(--led-on);
-  box-shadow: 0 0 8px var(--led-on);
-}
-
-.led-off .led-indicator {
-  background-color: var(--led-off);
-  color: var(--led-off);
-}
-
-.led-blink .led-indicator {
-  background-color: var(--led-blink);
-  color: var(--led-blink);
-  animation: blink 1s infinite;
-}
-
-.led-unknown .led-indicator {
-  background-color: var(--led-unknown);
-  color: var(--led-unknown);
-  animation: pulse 2s infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.3; }
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* Стили для кнопок LED */
-#ledOnBtn {
-  background: var(--led-on);
-}
-
-#ledOnBtn:hover {
-  background: #45a049;
-}
-
-#ledOffBtn {
-  background: var(--led-off);
-}
-
-#ledOffBtn:hover {
-  background: #da190b;
-}
-
-/* Адаптивность для компактного вида */
+/* Адаптивность */
 @media (max-width: 768px) {
   .controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+  
+  .button-row {
+    order: 1;
+  }
+  
+  .button-row button {
+    max-width: none;
   }
   
   .compact-data-row {
@@ -314,15 +318,8 @@ button:active {
     margin: 20px;
   }
   
-  #dataPanel p {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
   .led-status {
     align-self: flex-start;
-    margin-top: 4px;
   }
 }
 
@@ -337,11 +334,20 @@ button:active {
   }
   
   #map {
-    height: 50vh;
+    height: 40vh;
   }
   
   button {
     padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .button-row {
+    gap: 6px;
+  }
+  
+  .button-row button {
+    padding: 10px 8px;
     font-size: 13px;
   }
   
@@ -361,87 +367,6 @@ button:active {
   #dataPanel {
     padding: 10px 12px;
     font-size: 14px;
-  }
-}
-/* Стили для LED кнопок в одной строке */
-.led-controls-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
-}
-
-.led-controls-row button {
-  flex: 1;
-  min-width: 0;
-  max-width: 140px;
-}
-
-/* Адаптивность для LED кнопок */
-@media (max-width: 768px) {
-  .led-controls-row {
-    order: 1;
-  }
-  
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .led-controls-row button {
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .led-controls-row {
-    gap: 6px;
-  }
-  
-  .led-controls-row button {
-    padding: 10px 8px;
-    font-size: 13px;
-  }
-}
-/* Стили для кнопок в одной строке */
-.button-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
-}
-
-.button-row button {
-  flex: 1;
-  min-width: 0;
-  max-width: 160px;
-}
-
-/* Адаптивность для кнопок */
-@media (max-width: 768px) {
-  .button-row {
-    order: 1;
-  }
-  
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .button-row button {
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .button-row {
-    gap: 6px;
-  }
-  
-  .button-row button {
-    padding: 10px 8px;
-    font-size: 13px;
   }
   
   #openBtn {
