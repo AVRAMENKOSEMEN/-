@@ -1,103 +1,75 @@
 // service-worker.js
-const CACHE_NAME = 'mayak-finder-v5';
-const OFFLINE_URL = './offline.html';
-
-// Ресурсы для кэширования при установке
-const PRECACHE_URLS = [
-  './',
-  './index.html',
-  './style.css',
-  './script.js',
-  './history-manager.js',
-  './settings.js',
-  './ble-manager-compatible.js',
-  './offline.html',
-  './manifest.json'
+const CACHE_NAME = "mayak-finder-cache-v2";
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./history-manager.js",
+  "./settings.js",
+  "./manifest.json",
+  "./offline.html",
+  "https://unpkg.com/leaflet/dist/leaflet.css",
+  "https://unpkg.com/leaflet/dist/leaflet.js"
 ];
 
-self.addEventListener('install', event => {
-  console.log('🔄 Service Worker: Установка');
+self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('✅ Кэширование основных ресурсов');
-        return cache.addAll(PRECACHE_URLS);
-      })
-      .then(() => {
-        console.log('✅ Все ресурсы закэшированы');
-        return self.skipWaiting();
+        console.log("Кеш открыт");
+        return cache.addAll(urlsToCache);
       })
       .catch(error => {
-        console.error('❌ Ошибка кэширования:', error);
+        console.error("Ошибка кеширования:", error);
       })
   );
 });
 
-self.addEventListener('activate', event => {
-  console.log('🔄 Service Worker: Активация');
+self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Удаление старого кэша:', cacheName);
+            console.log("Удаление старого кеша:", cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => {
-      console.log('✅ Service Worker активирован');
-      return self.clients.claim();
     })
   );
 });
 
-self.addEventListener('fetch', event => {
-  // Пропускаем запросы к внешним картам
-  if (event.request.url.includes('tile.openstreetmap.org') ||
-      event.request.url.includes('google') ||
+self.addEventListener("fetch", event => {
+  if (event.request.url.includes('google') || 
       event.request.url.includes('yandex') ||
       event.request.url.includes('2gis')) {
-    return;
+    return; // Не кешируем внешние карты
   }
 
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Если есть в кэше - возвращаем
-        if (response) {
-          return response;
-        }
-
-        // Иначе пытаемся загрузить из сети
-        return fetch(event.request)
+        // Возвращаем кешированную версию или загружаем новую
+        return response || fetch(event.request)
           .then(fetchResponse => {
-            // Кэшируем только успешные GET запросы
-            if (fetchResponse && fetchResponse.status === 200 && 
-                event.request.method === 'GET' &&
-                event.request.url.startsWith('http')) {
-              
-              const responseToCache = fetchResponse.clone();
-              caches.open(CACHE_NAME)
+            // Кешируем новые запросы
+            if (event.request.url.startsWith('http') && 
+                event.request.method === 'GET') {
+              return caches.open(CACHE_NAME)
                 .then(cache => {
-                  cache.put(event.request, responseToCache);
+                  cache.put(event.request, fetchResponse.clone());
+                  return fetchResponse;
                 });
             }
             return fetchResponse;
           })
-          .catch(error => {
-            console.log('🌐 Оффлайн режим для:', event.request.url);
-            
-            // Только для навигационных запросов возвращаем оффлайн страницу
-            if (event.request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
+          .catch(() => {
+            // При ошибке сети показываем офлайн-страницу
+            if (event.request.destination === 'document') {
+              return caches.match('./offline.html');
             }
-            
-            // Для остальных запросов возвращаем ошибку
-            return new Response('Оффлайн', {
-              status: 503,
-              statusText: 'Service Unavailable'
-            });
           });
       })
   );
