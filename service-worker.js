@@ -61,6 +61,17 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Для навигационных запросов (страниц) - всегда отдаём из кэша
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match(OFFLINE_URL).then(cachedResponse => {
+        return cachedResponse || fetch(event.request);
+      })
+    );
+    return;
+  }
+
+  // Для остальных запросов - стратегия "сначала кэш, потом сеть"
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -69,7 +80,7 @@ self.addEventListener('fetch', event => {
           return response;
         }
 
-        // Иначе пытаемся загрузить
+        // Иначе пытаемся загрузить из сети
         return fetch(event.request)
           .then(fetchResponse => {
             // Кэшируем только успешные GET запросы
@@ -88,11 +99,6 @@ self.addEventListener('fetch', event => {
           .catch(error => {
             console.log('🌐 Оффлайн режим для:', event.request.url);
             
-            // Для страниц возвращаем оффлайн версию
-            if (event.request.destination === 'document') {
-              return caches.match(OFFLINE_URL);
-            }
-            
             // Для API запросов возвращаем пустой ответ
             return new Response(JSON.stringify({ offline: true }), {
               headers: { 'Content-Type': 'application/json' }
@@ -100,30 +106,4 @@ self.addEventListener('fetch', event => {
           });
       })
   );
-});
-
-// Фоновая синхронизация
-self.addEventListener('sync', event => {
-  if (event.tag === 'background-sync') {
-    console.log('🔄 Фоновая синхронизация');
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-async function doBackgroundSync() {
-  // Можно добавить синхронизацию истории при появлении сети
-  const clients = await self.clients.matchAll();
-  clients.forEach(client => {
-    client.postMessage({
-      type: 'SYNC',
-      message: 'Фоновая синхронизация'
-    });
-  });
-}
-
-// Принятие сообщений от главного потока
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
