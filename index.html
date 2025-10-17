@@ -19,8 +19,14 @@
   <main>
     <div id="map"></div>
 
-    <div id="dataPanel">
-  <p><strong>Координаты маяка:</strong> <span id="beaconCoords">N/A</span></p>
+   <div id="dataPanel">
+  <!-- Координаты маяка в одной строке -->
+  <div class="compact-data-row">
+    <div class="compact-data-item">
+      <span class="compact-data-label">Координаты маяка:</span>
+      <span class="compact-data-value" id="beaconCoords">N/A</span>
+    </div>
+  </div>
   
   <div class="compact-data-row">
     <div class="compact-data-item">
