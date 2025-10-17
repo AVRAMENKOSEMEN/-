@@ -44,9 +44,9 @@ function setupEventListeners() {
   document.getElementById("ledOnBtn").addEventListener("click", setLedOn);
   document.getElementById("ledOffBtn").addEventListener("click", setLedOff);
   document.getElementById("historyBtn").addEventListener("click", showHistory);
-  document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
   document.getElementById("openBtn").addEventListener("click", () => showModal("openModal"));
   document.getElementById("settingsBtn").addEventListener("click", () => showModal("settingsModal"));
+  document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
 
   // Модальные окна
   document.getElementById("closeOpen").addEventListener("click", () => hideModal("openModal"));
@@ -59,10 +59,6 @@ function setupEventListeners() {
   document.getElementById("openGoogle").addEventListener("click", () => openMap("google"));
   document.getElementById("openYandex").addEventListener("click", () => openMap("yandex"));
   document.getElementById("open2gis").addEventListener("click", () => openMap("2gis"));
-
-  // Настройки
-  document.getElementById("saveSettings").addEventListener("click", saveSettings);
-  document.getElementById("resetSettings").addEventListener("click", resetSettings);
 }
 
 function checkGeolocationSupport() {
@@ -234,7 +230,6 @@ function clearHistory() {
   if (confirm("Вы уверены, что хотите очистить всю историю?")) {
     HistoryManager.clear();
     alert("История очищена");
-    hideModal("historyModal");
   }
 }
 
@@ -281,114 +276,15 @@ function openMap(service) {
   window.open(url, "_blank");
 }
 
-// Функции настроек
-function loadSettings() {
-  try {
-    const settings = localStorage.getItem('mayak_settings_v10');
-    return settings ? JSON.parse(settings) : {
-      theme: 'auto',
-      units: 'kmh',
-      showMyLocation: true,
-      autoFollow: true
-    };
-  } catch(e) {
-    console.error("Ошибка загрузки настроек:", e);
-    return {
-      theme: 'auto',
-      units: 'kmh',
-      showMyLocation: true,
-      autoFollow: true
-    };
-  }
-}
-
-function saveSettings() {
-  const newSettings = {
-    theme: document.getElementById('themeSelect').value,
-    units: document.getElementById('unitsSelect').value,
-    showMyLocation: document.getElementById('showMyLocation').checked,
-    autoFollow: document.getElementById('autoFollow').checked
-  };
-  
-  try {
-    localStorage.setItem('mayak_settings_v10', JSON.stringify(newSettings));
-    applySettings(newSettings);
-    hideModal('settingsModal');
-    alert('Настройки сохранены!');
-  } catch(e) {
-    console.error("Ошибка сохранения настроек:", e);
-    alert('Ошибка сохранения настроек');
-  }
-}
-
-function resetSettings() {
-  if (confirm("Сбросить все настройки к значениям по умолчанию?")) {
-    try {
-      localStorage.removeItem('mayak_settings_v10');
-      applySettings({
-        theme: 'auto',
-        units: 'kmh',
-        showMyLocation: true,
-        autoFollow: true
+// Регистрация Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('SW registered: ', registration);
+      })
+      .catch(registrationError => {
+        console.log('SW registration failed: ', registrationError);
       });
-      updateSettingsForm();
-      alert('Настройки сброшены!');
-    } catch(e) {
-      console.error("Ошибка сброса настроек:", e);
-      alert('Ошибка сброса настроек');
-    }
-  }
+  });
 }
-
-function applySettings(settings = null) {
-  if (!settings) {
-    settings = loadSettings();
-  }
-
-  const root = document.documentElement;
-  
-  // Применение темы
-  if (settings.theme === 'dark') {
-    root.classList.add('dark');
-  } else if (settings.theme === 'light') {
-    root.classList.remove('dark');
-  } else {
-    // Автоопределение темы
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }
-
-  // Перезапуск отслеживания местоположения
-  if (watchId) {
-    navigator.geolocation.clearWatch(watchId);
-    startTracking();
-  }
-}
-
-function updateSettingsForm() {
-  const settings = loadSettings();
-  document.getElementById('themeSelect').value = settings.theme;
-  document.getElementById('unitsSelect').value = settings.units;
-  document.getElementById('showMyLocation').checked = settings.showMyLocation;
-  document.getElementById('autoFollow').checked = settings.autoFollow;
-}
-
-// Инициализация настроек при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-  const settings = loadSettings();
-  applySettings(settings);
-  updateSettingsForm();
-
-  // Слушатель изменения системной темы
-  if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      const settings = loadSettings();
-      if (settings.theme === 'auto') {
-        applySettings(settings);
-      }
-    });
-  }
-});
