@@ -350,3 +350,43 @@ button:active {
     font-size: 14px;
   }
 }
+/* Стили для LED кнопок в одной строке */
+.led-controls-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.led-controls-row button {
+  flex: 1;
+  min-width: 0;
+  max-width: 140px;
+}
+
+/* Адаптивность для LED кнопок */
+@media (max-width: 768px) {
+  .led-controls-row {
+    order: 1;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .led-controls-row button {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .led-controls-row {
+    gap: 6px;
+  }
+  
+  .led-controls-row button {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}
