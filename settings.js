@@ -4,9 +4,7 @@ const DEFAULTS = {
   theme: 'auto',
   units: 'kmh',
   showMyLocation: true,
-  autoFollow: true,
-  mapType: 'osm',
-  historyLimit: 1000
+  autoFollow: true
 };
 
 function loadSettings() {
@@ -23,10 +21,8 @@ function saveSettings(obj) {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
     applySettings(obj);
-    return true;
   } catch(e) {
     console.error("Ошибка сохранения настроек:", e);
-    return false;
   }
 }
 
@@ -35,10 +31,8 @@ function resetSettings() {
     localStorage.removeItem(SETTINGS_KEY);
     applySettings(DEFAULTS);
     updateSettingsForm(DEFAULTS);
-    return true;
   } catch(e) {
     console.error("Ошибка сброса настроек:", e);
-    return false;
   }
 }
 
@@ -105,17 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showMyLocation: document.getElementById('showMyLocation').checked,
         autoFollow: document.getElementById('autoFollow').checked
       };
-      if (saveSettings(newSettings)) {
-        hideModal('settingsModal');
-      }
+      saveSettings(newSettings);
+      hideModal('settingsModal');
     });
   }
 
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (resetSettings()) {
-        hideModal('settingsModal');
-      }
+      resetSettings();
     });
   }
 
