@@ -390,3 +390,49 @@ button:active {
     font-size: 13px;
   }
 }
+/* Стили для кнопок в одной строке */
+.button-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.button-row button {
+  flex: 1;
+  min-width: 0;
+  max-width: 160px;
+}
+
+/* Адаптивность для кнопок */
+@media (max-width: 768px) {
+  .button-row {
+    order: 1;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .button-row button {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .button-row {
+    gap: 6px;
+  }
+  
+  .button-row button {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  #openBtn {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+}
