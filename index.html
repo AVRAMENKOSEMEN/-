@@ -20,25 +20,31 @@
     <div id="map"></div>
 
     <div id="dataPanel">
-      <p><strong>Координаты маяка:</strong> <span id="beaconCoords">N/A</span></p>
-      
-      <div class="compact-data-row">
-        <div class="compact-data-item">
-          <span class="compact-data-label">Моё местоположение:</span>
-          <span class="compact-data-value" id="myCoords">N/A</span>
-        </div>
-        <div class="compact-data-item">
-          <span class="compact-data-label">Расстояние:</span>
-          <span class="compact-data-value" id="distance">N/A</span>
-        </div>
-        <div class="compact-data-item">
-          <span class="compact-data-label">Скорость:</span>
-          <span class="compact-data-value" id="speed">N/A</span>
-        </div>
-      </div>
-      
-      <p><strong>Статус LED на маяке:</strong> <span id="ledStatus">❓ Неизвестно</span></p>
+  <p><strong>Координаты маяка:</strong> <span id="beaconCoords">N/A</span></p>
+  
+  <div class="compact-data-row">
+    <div class="compact-data-item">
+      <span class="compact-data-label">Моё местоположение:</span>
+      <span class="compact-data-value" id="myCoords">N/A</span>
     </div>
+    <div class="compact-data-item">
+      <span class="compact-data-label">Расстояние:</span>
+      <span class="compact-data-value" id="distance">N/A</span>
+    </div>
+    <div class="compact-data-item">
+      <span class="compact-data-label">Скорость:</span>
+      <span class="compact-data-value" id="speed">N/A</span>
+    </div>
+  </div>
+  
+  <!-- Статус LED в одной строке -->
+  <div class="compact-data-row">
+    <div class="compact-data-item">
+      <span class="compact-data-label">Статус LED на маяке:</span>
+      <span class="compact-data-value" id="ledStatus">❓ Неизвестно</span>
+    </div>
+  </div>
+</div>
 
     <div class="controls">
   <button id="connectBtn">🔗 Подключить BLE</button>
