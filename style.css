@@ -77,9 +77,6 @@ header h1 {
   padding: 6px 0;
 }
 
-.compact-data-row:not(:last-child) {
-  border-bottom: 1px solid var(--border-color);
-}
 .compact-data-item {
   display: flex;
   align-items: center;
